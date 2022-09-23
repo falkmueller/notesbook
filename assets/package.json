@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "gulp": "node gulp.js"
+  },
+  "devDependencies": {
+    "browserify": "^17.0.0",
+    "gulp": "^4.0.2",
+    "gulp-concat": "^2.6.1",
+    "gulp-sass": "^5.1.0",
+    "gulp-watch": "^5.0.1",
+    "sass": "^1.54.9"
+  }
+}

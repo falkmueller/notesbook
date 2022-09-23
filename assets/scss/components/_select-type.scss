@@ -1,0 +1,16 @@
+.select-type {
+    a {
+        display: block;
+        border: 1px solid var(--color-secondary);
+        background-color: var(--color-tertiary);
+        color: var(--color-secondary);
+        text-decoration: none;
+        cursor: pointer;
+        padding: 1em;
+        margin-bottom: 0.2em;
+    }
+
+    a:hover {
+        background-color: var(--color-quaternary);
+    }
+}

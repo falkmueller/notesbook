@@ -1,0 +1,42 @@
+.container {
+    padding: 1.5em;
+    margin-bottom: 2em;
+    margin: 0 auto;
+    max-width: 1380px;
+}
+
+.btn-add, .btn-add:focus {
+    width: 2em;
+    height: 2em;
+    border-radius: 1em;
+    background-color: var(--color-secondary);
+    color: var(--color-initial);
+    text-align: center;
+    line-height: 2em;
+    display: block;
+    cursor: pointer;
+    position: fixed;
+    bottom: 1.5em;
+    right: 1.5em;
+    text-decoration: none;
+}
+
+.btn-overview, .btn-overview:focus {
+    width: 2em;
+    height: 2em;
+    border-radius: 1em;
+    background-color: var(--color-secondary);
+    color: var(--color-initial);
+    text-align: center;
+    line-height: 2em;
+    display: block;
+    cursor: pointer;
+    position: fixed;
+    bottom: 1.5em;
+    right: 3.7em;
+    text-decoration: none;
+}
+
+.btn-add:hover, .btn-overview:hover {
+    background-color: var(--color-quaternary);
+} 

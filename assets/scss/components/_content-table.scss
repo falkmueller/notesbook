@@ -1,0 +1,39 @@
+.content-table {
+
+    ul {
+        list-style: none;
+    }
+
+    ul ul {
+        margin: 0 0 0 1.5em;
+        font-size: inherit;
+    }
+
+    a {
+        display: flex;
+        line-height: 1.6em;
+
+        &:hover {
+            background-color: var(--color-tertiary);
+        }
+
+        > span:first-child {
+            flex-grow: 2;
+            position: relative;
+            overflow: hidden;
+
+            span::after  {
+                position: absolute;
+                padding-inline-start: .25ch;
+                content: " . . . . . . . . . . . . . . . . . . . "
+                    ". . . . . . . . . . . . . . . . . . . . . . . "
+                    ". . . . . . . . . . . . . . . . . . . . . . . "
+                    ". . . . . . . . . . . . . . . . . . . . . . . "
+                    ". . . . . . . . . . . . . . . . . . . . . . . "
+                    ". . . . . . . . . . . . . . . . . . . . . . . "
+                    ". . . . . . . . . . . . . . . . . . . . . . . ";
+                text-align: right;
+            }
+        }
+    }
+}

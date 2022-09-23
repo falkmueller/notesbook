@@ -1,0 +1,12 @@
+# enable apache rewrite engine
+RewriteEngine on
+
+# disbale access on assets folder
+RewriteRule ^files/.*$ - [F,L]
+
+# Deliver the folder or file directly if it exists on the server
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+ 
+# Push every request to index.php
+RewriteRule ^api/(.*)$ api/index.php [QSA]
