@@ -16,43 +16,69 @@ module.exports = {
         this.vueApp.mount('#app');
     }
 }
-},{"./components/app.component":4,"./i18n":11}],2:[function(require,module,exports){
+},{"./components/app.component":4,"./i18n":10}],2:[function(require,module,exports){
 const router = require("../lib/router");
+const app = require("../app");
 
 module.exports = {
     template: `<div>
-        <form v-on:submit="submit">
-            <h1>Add sub section</h1>
-            <input v-model="model.title" type="text" />
-            <button type="submit">submit</button>
-        </form>
+        <component :is="getComponent(type)" :onSubmit="(raw) => {submit(raw);}" />
     </div>`,
 
     data() {
         return {
-            model: {
-                title: ""
-            }
+            directoryId: null,
+            type: null
         }
+    },
+
+    mounted(){
+        let route = router.getRoute();
+        this.directoryId = route.query.dir;
+        this.type = route.query.type;
     },
 
 
     methods: {
-        submit(e){
-            e.preventDefault();
+        getComponent: function (type) {
+            var typeObj = app.types.find(x => x.name == type);
+            if(!typeObj){
+                return {template: `<div>type ${type} not implemented</div>`}
+            }
+            return typeObj.components.alter;
+        },
 
-            let route = router.getRoute();
-          
-            axios.post('api/directory', {
-                title: this.model.title,
-                parent_id: route.query.dir || ""
-            }).then(function(){
-                window.location.href = "#/";
+        submit(raw){
+            console.log("submit", this.directoryId, raw);
+
+            axios.get(`api/file?directory_id=${this.directoryId}&file_name=content.txt`).then((response) => {
+                this._updateContent(response.data, raw);
+             }, () => {
+                this._updateContent("", raw);
+             })
+        },
+        _updateContent(content, raw){
+            if(content != ""){
+                content += "\n\r\n\r";
+            }
+
+            content += `---${this.type}---\n\r\n\r`;
+            content += raw;
+
+            axios.post(
+                `api/file?directory_id=${this.directoryId}&file_name=content.txt`, 
+                content,
+                {
+                    headers: { 
+                        'Content-Type' : 'text/plain' 
+                    }
+                }).then(() => {
+                window.location.href = `#/page?dir=${this.directoryId}`;
             })
         }
     }
 }
-},{"../lib/router":14}],3:[function(require,module,exports){
+},{"../app":1,"../lib/router":13}],3:[function(require,module,exports){
 const router = require("../lib/router");
 
 module.exports = {
@@ -89,7 +115,7 @@ module.exports = {
     }
 
 }
-},{"../lib/router":14}],4:[function(require,module,exports){
+},{"../lib/router":13}],4:[function(require,module,exports){
 const router = require("../lib/router");
 const notFoundComponent = require("./not-found.component");
 
@@ -127,7 +153,7 @@ module.exports = {
         }
     }
 }
-},{"../lib/router":14,"./not-found.component":6}],5:[function(require,module,exports){
+},{"../lib/router":13,"./not-found.component":7}],5:[function(require,module,exports){
 const app = require("../app");
 
 app.vueApp.component('ContentTableItem', {
@@ -164,10 +190,76 @@ module.exports = {
     }
 };
 },{"../app":1}],6:[function(require,module,exports){
+const router = require("../lib/router");
+const app = require("../app");
+const contentHelper = require("../lib/content-helper");
+
+module.exports = {
+    template: `<div>
+        <component :is="getComponent(type)" :input="raw" :onSubmit="(raw) => {submit(raw);}" />
+    </div>`,
+
+    data() {
+        return {
+            directoryId: null,
+            idx: 0,
+            type: null,
+            raw: null,
+            content: null
+        }
+    },
+
+    mounted(){
+        let route = router.getRoute();
+        this.directoryId = route.query.dir;
+        this.idx = parseInt(route.query.idx);
+
+        axios.get(`api/file?directory_id=${this.directoryId}&file_name=content.txt`).then((response) => {
+                
+            this.content = contentHelper.splitContent(response.data);
+            let comp = this.content[this.idx];
+            this.type = comp.type;
+            this.raw = comp.content;
+        });
+
+        
+    },
+
+
+    methods: {
+        getComponent: function (type) {
+            var typeObj = app.types.find(x => x.name == type);
+            if(!typeObj){
+                return {template: `<div>type ${type} not implemented</div>`}
+            }
+            return typeObj.components.alter;
+        },
+
+        submit(raw){
+            console.log("submit", this.directoryId, raw);
+
+            this.content[this.idx].content = raw;
+           
+            let fileContent = contentHelper.implodeContent(this.content);
+
+            axios.post(
+                `api/file?directory_id=${this.directoryId}&file_name=content.txt`, 
+                fileContent,
+                {
+                    headers: { 
+                        'Content-Type' : 'text/plain' 
+                    }
+                }).then(() => {
+                window.location.href = `#/page?dir=${this.directoryId}`;
+            })
+        }
+    }
+}
+},{"../app":1,"../lib/content-helper":12,"../lib/router":13}],7:[function(require,module,exports){
 module.exports = {
     template: `<div>404</div>`
 }
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 //<a class="pull-right">&#9998;</a>
 
 const contentHelper =  require("../lib/content-helper");
@@ -215,7 +307,7 @@ module.exports = {
          })
     }
 }
-},{"../app":1,"../lib/content-helper":13,"../lib/router":14}],8:[function(require,module,exports){
+},{"../app":1,"../lib/content-helper":12,"../lib/router":13}],9:[function(require,module,exports){
 const router = require("../lib/router");
 const app = require("../app");
 
@@ -243,8 +335,143 @@ module.exports = {
         }
     }
 };
-},{"../app":1,"../lib/router":14}],9:[function(require,module,exports){
-const contentHelper = require("../../lib/content-helper");
+},{"../app":1,"../lib/router":13}],10:[function(require,module,exports){
+const messages = {
+    en: {
+        contentTable: {
+            headline: 'Content table'
+        },
+        type: {
+            subdirectory: {
+                title: "Subsection"
+            }
+        }
+    },
+    de: {
+        contentTable: {
+            headline: 'Inhaltsverzeichnis'
+        },
+        type: {
+            subdirectory: {
+                title: "Unterkategorie"
+            }
+        }
+    }
+  }
+
+
+  module.exports = {
+    messages,
+    getVuePlugin(){
+        return VueI18n.createI18n({
+            locale: 'de', // set locale
+            fallbackLocale: 'en', // set fallback locale
+            messages,
+        })
+    }
+  }
+},{}],11:[function(require,module,exports){
+var router = require("./lib/router");
+router.routes['/'] = require("./components/content-table.compnent");
+router.routes['/add'] = require("./components/select-type.component");
+router.routes['/add/directory'] = require("./components/add-directory.component");;
+router.routes['/add/content'] = require("./components/add-content.component");
+router.routes['/edit/content'] = require("./components/edit-content.component");
+router.routes['/page'] = require("./components/page.component");
+
+var app = require("./app");
+app.types.push(require("./types/link.type"));
+app.types.push(require("./types/text.type"));
+app.run()
+},{"./app":1,"./components/add-content.component":2,"./components/add-directory.component":3,"./components/content-table.compnent":5,"./components/edit-content.component":6,"./components/page.component":8,"./components/select-type.component":9,"./lib/router":13,"./types/link.type":14,"./types/text.type":15}],12:[function(require,module,exports){
+module.exports = {
+
+    splitContent(content){
+        let returnValue = [];
+
+        let splitRegex =  /---[\w]*---[^---]*/gs;
+        let extractRegex =  /---([\w]*)---(.*)/s;
+        
+        var groups = content.match(splitRegex);
+        
+        groups.forEach((group)=> {
+          let parts = extractRegex.exec(group)
+        
+          returnValue.push({
+            type: parts[1].toLowerCase(),
+            content: parts[2].trim()
+          });
+        });
+
+        return returnValue;
+    },
+
+    implodeContent(content){
+        let stringContent = "";
+
+        content.forEach((elem) => {
+            if(stringContent != ""){
+                stringContent += "\n\r\n\r";
+            }
+
+            stringContent += `---${elem.type}---\n\r\n\r`;
+            stringContent += elem.content;
+        });
+
+        return stringContent;
+    },
+
+    toObject(str){
+        var separateLines = str.trim().split(/\r?\n|\r|\n/g);
+        var returnValue = {};
+
+        separateLines.forEach((line)=>{
+            let slitIdx = line.indexOf(":");
+            let key = line.substr(0, slitIdx).trim();
+            let value = line.substr(slitIdx + 1).trim();
+            returnValue[key] = value;
+        });
+
+        return returnValue;
+    },
+
+    toStr(obj){
+        var response = "";
+        for (const prop in obj) {
+            let key = prop;
+            
+            let value = obj[prop];
+            let valueString = "";
+            if(typeof value !== 'undefined'){
+                valueString = JSON.stringify(value).replace(/^\"+|\"+$/g, '');
+            }
+
+            if(response != ""){
+                response += "\n";
+            }
+
+            response += `${key}: ${valueString}`;
+        }
+
+        return response;
+    }
+};
+},{}],13:[function(require,module,exports){
+module.exports = {
+    routes: {},
+
+    getRoute(){
+        var hash = window.location.hash.slice(1) || '/';
+        query = hash.split('?')[1] || "";
+    
+        return {
+            path: hash.split('?')[0],
+            query: Object.fromEntries(new URLSearchParams(query))
+        }
+    }
+}
+},{}],14:[function(require,module,exports){
+const contentHelper = require("../lib/content-helper");
 
 module.exports = {
     "name": "link",
@@ -269,46 +496,88 @@ module.exports = {
 
             props: ["raw"],
         },
-        "create": {
+        "alter": {
             template: `<div>
-                <input v-model="model.url" type="text" />
-                <button type="submit">submit</button>
+                <form v-on:submit="submit">
+                    <h1>{{ $t("type.link." + mode + ".headline") }}</h1>
+                    <input v-model="model.url" type="text" placeholder="https://www......" />
+                    <button type="submit">{{ $t("type.link." + mode + ".button") }}</button>
+                </form>
             </div>`,   
 
             data() {
                 return {
                     model: {
                         url: ""
-                    }
+                    },
+                    mode: "add"
                 }
             },
 
-        },
-        "update": {
-            template: `<div> </div>`, 
-        },
-        "delete": {
-            template: `<div> </div>`,
+            props: ["onSubmit", "input"],
+
+            mounted(){
+                if(!this.input){
+                    return;
+                }
+
+                console.log("load content", this.input);
+
+                var value = contentHelper.toObject(this.input)
+                this.model.title = value.title;
+                this.model.url = value.url;
+                this.mode = "edit";
+            },
+
+            methods: {
+                submit(e){
+                    e.preventDefault();
+
+                    let rawContent = {
+                        url: this.model.url,
+                        title: "TODO: exctract title"
+                    };
+                    let raw = contentHelper.toStr(rawContent);
+        
+                    this.onSubmit(raw);
+                }
+            }
         }
     },
     "translations": {
         "en": {
             "type": {
                 "link": {
-                    "title": "Link"
+                    "title": "Link",
+                    "add": {
+                        "headline": "Add link",
+                        "button": "submit"
+                    },
+                    "edit": {
+                        "headline": "alter link",
+                        "button": "submit"
+                    }
                 }
             }
         },
         "de": {
             "type": {
                 "link": {
-                    "title": "Link"
+                    "title": "Link",
+                    "add": {
+                        "headline": "Link hinzufügen",
+                        "button": "speichern"
+                    },
+                    "edit": {
+                        "headline": "Link bearbeiten",
+                        "button": "speichern"
+                    }
                 }
             }
         }
     }
 }
-},{"../../lib/content-helper":13}],10:[function(require,module,exports){
+},{"../lib/content-helper":12}],15:[function(require,module,exports){
 module.exports = {
     "name": "text",
     "sortNumber": 2,
@@ -356,119 +625,4 @@ module.exports = {
         }
     }
 }
-},{}],11:[function(require,module,exports){
-const messages = {
-    en: {
-        contentTable: {
-            headline: 'Content table'
-        },
-        type: {
-            subdirectory: {
-                title: "Subsection"
-            }
-        }
-    },
-    de: {
-        contentTable: {
-            headline: 'Inhaltsverzeichnis'
-        },
-        type: {
-            subdirectory: {
-                title: "Unterkategorie"
-            }
-        }
-    }
-  }
-
-
-  module.exports = {
-    messages,
-    getVuePlugin(){
-        return VueI18n.createI18n({
-            locale: 'de', // set locale
-            fallbackLocale: 'en', // set fallback locale
-            messages,
-        })
-    }
-  }
-},{}],12:[function(require,module,exports){
-var router = require("./lib/router");
-router.routes['/'] = require("./components/content-table.compnent");
-router.routes['/add'] = require("./components/select-type.component");
-router.routes['/add/directory'] = require("./components/add-directory.component");;
-router.routes['/add/content'] = require("./components/add-content.component");
-router.routes['/page'] = require("./components/page.component");
-
-
-var app = require("./app");
-app.types.push(require("./components/types/link.type"));
-app.types.push(require("./components/types/text.type"));
-app.run()
-},{"./app":1,"./components/add-content.component":2,"./components/add-directory.component":3,"./components/content-table.compnent":5,"./components/page.component":7,"./components/select-type.component":8,"./components/types/link.type":9,"./components/types/text.type":10,"./lib/router":14}],13:[function(require,module,exports){
-module.exports = {
-
-    splitContent(content){
-        let returnValue = [];
-
-        let splitRegex =  /---[\w]*---[^---]*/gs;
-        let extractRegex =  /---([\w]*)---(.*)/s;
-        
-        var groups = content.match(splitRegex);
-        
-        groups.forEach((group)=> {
-          let parts = extractRegex.exec(group)
-        
-          returnValue.push({
-            type: parts[1].toLowerCase(),
-            content: parts[2].trim()
-          });
-        });
-
-        return returnValue;
-    },
-
-    toObject(str){
-        var separateLines = str.trim().split(/\r?\n|\r|\n/g);
-        var returnValue = {};
-
-        separateLines.forEach((line)=>{
-            let slitIdx = line.indexOf(":");
-            let key = line.substr(0, slitIdx).trim();
-            let value = line.substr(slitIdx + 1).trim();
-            returnValue[key] = value;
-        });
-
-        return returnValue;
-    },
-
-    toStr(obj){
-        var resonse = "";
-        for (const prop in obj) {
-            let key = prop;
-            let value = JSON.stringify(obj[prop]).replace(/^\"+|\"+$/g, '');
-
-            if(response != ""){
-                resonse += "\n";
-            }
-
-            resonse += `${key}: ${value}`;
-        }
-
-        return resonse;
-    }
-};
-},{}],14:[function(require,module,exports){
-module.exports = {
-    routes: {},
-
-    getRoute(){
-        var hash = window.location.hash.slice(1) || '/';
-        query = hash.split('?')[1] || "";
-    
-        return {
-            path: hash.split('?')[0],
-            query: Object.fromEntries(new URLSearchParams(query))
-        }
-    }
-}
-},{}]},{},[12]);
+},{}]},{},[11]);

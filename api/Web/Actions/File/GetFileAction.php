@@ -19,7 +19,13 @@ class GetFileAction extends Action
     {
         $directoryId = $_GET["directory_id"];
         $filename = $_GET["file_name"];
-        $file =  $this->handler->handle($directoryId, $filename);
-        $this->responseFile($file);
+        try {
+            $file =  $this->handler->handle($directoryId, $filename);
+            $this->responseFile($file);
+        } catch (\Throwable $th) {
+            http_response_code(404);
+            
+        }
+        
     }
 }

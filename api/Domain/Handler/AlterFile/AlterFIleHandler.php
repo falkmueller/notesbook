@@ -16,9 +16,15 @@ class AlterFileHandler
 
     public function handle(AlterFileRequest $request)
     {
+        $ext = pathinfo($request->fielName, PATHINFO_EXTENSION);
+
+        if(in_array(strtolower($ext), ["php", "htaccess", "gitignore"])){
+            throw new Exception("file type {$ext} not allowed");
+        }
+
         $filename = urlencode($request->fielName);
         $directory = $this->getDirectory($request->directoryId);
-        $path = "{$directory}{DIRECTORY_SEPARATOR}{$filename}";
+        $path = $directory.DIRECTORY_SEPARATOR.$filename;
 
         if(!file_put_contents($path, $request->stream)){
             return false;

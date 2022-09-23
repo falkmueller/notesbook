@@ -1,22 +1,36 @@
 const router = require("../lib/router");
 const app = require("../app");
+const contentHelper = require("../lib/content-helper");
 
 module.exports = {
     template: `<div>
-        <component :is="getComponent(type)" :onSubmit="(raw) => {submit(raw);}" />
+        <component :is="getComponent(type)" :input="raw" :onSubmit="(raw) => {submit(raw);}" />
     </div>`,
 
     data() {
         return {
             directoryId: null,
-            type: null
+            idx: 0,
+            type: null,
+            raw: null,
+            content: null
         }
     },
 
     mounted(){
         let route = router.getRoute();
         this.directoryId = route.query.dir;
-        this.type = route.query.type;
+        this.idx = parseInt(route.query.idx);
+
+        axios.get(`api/file?directory_id=${this.directoryId}&file_name=content.txt`).then((response) => {
+                
+            this.content = contentHelper.splitContent(response.data);
+            let comp = this.content[this.idx];
+            this.type = comp.type;
+            this.raw = comp.content;
+        });
+
+        
     },
 
 
@@ -32,23 +46,13 @@ module.exports = {
         submit(raw){
             console.log("submit", this.directoryId, raw);
 
-            axios.get(`api/file?directory_id=${this.directoryId}&file_name=content.txt`).then((response) => {
-                this._updateContent(response.data, raw);
-             }, () => {
-                this._updateContent("", raw);
-             })
-        },
-        _updateContent(content, raw){
-            if(content != ""){
-                content += "\n\r\n\r";
-            }
-
-            content += `---${this.type}---\n\r\n\r`;
-            content += raw;
+            this.content[this.idx].content = raw;
+           
+            let fileContent = contentHelper.implodeContent(this.content);
 
             axios.post(
                 `api/file?directory_id=${this.directoryId}&file_name=content.txt`, 
-                content,
+                fileContent,
                 {
                     headers: { 
                         'Content-Type' : 'text/plain' 

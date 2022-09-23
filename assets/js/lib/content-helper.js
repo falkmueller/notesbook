@@ -20,6 +20,21 @@ module.exports = {
         return returnValue;
     },
 
+    implodeContent(content){
+        let stringContent = "";
+
+        content.forEach((elem) => {
+            if(stringContent != ""){
+                stringContent += "\n\r\n\r";
+            }
+
+            stringContent += `---${elem.type}---\n\r\n\r`;
+            stringContent += elem.content;
+        });
+
+        return stringContent;
+    },
+
     toObject(str){
         var separateLines = str.trim().split(/\r?\n|\r|\n/g);
         var returnValue = {};
@@ -35,18 +50,23 @@ module.exports = {
     },
 
     toStr(obj){
-        var resonse = "";
+        var response = "";
         for (const prop in obj) {
             let key = prop;
-            let value = JSON.stringify(obj[prop]).replace(/^\"+|\"+$/g, '');
-
-            if(response != ""){
-                resonse += "\n";
+            
+            let value = obj[prop];
+            let valueString = "";
+            if(typeof value !== 'undefined'){
+                valueString = JSON.stringify(value).replace(/^\"+|\"+$/g, '');
             }
 
-            resonse += `${key}: ${value}`;
+            if(response != ""){
+                response += "\n";
+            }
+
+            response += `${key}: ${valueString}`;
         }
 
-        return resonse;
+        return response;
     }
 };
