@@ -16,7 +16,9 @@ module.exports = {
             },
 
             mounted(){
-                var value = contentHelper.toObject(this.raw)
+                
+                var value = contentHelper.toObject(this.raw);
+                console.log("link", this.raw, value);
                 this.title = value.title;
                 this.url = value.url;
             },
@@ -28,6 +30,7 @@ module.exports = {
                 <form v-on:submit="submit">
                     <h1>{{ $t("type.link." + mode + ".headline") }}</h1>
                     <input v-model="model.url" type="text" placeholder="https://www......" />
+                    <input v-model="model.title" @focus="loadTitle()" type="text" :placeholder='$t("type.link." + mode + ".title_placeholder")' />
                     <button type="submit">{{ $t("type.link." + mode + ".button") }}</button>
                 </form>
             </div>`,   
@@ -35,7 +38,8 @@ module.exports = {
             data() {
                 return {
                     model: {
-                        url: ""
+                        url: "",
+                        title: ""
                     },
                     mode: "add"
                 }
@@ -57,12 +61,25 @@ module.exports = {
             },
 
             methods: {
+                loadTitle(){
+                    if(!this.model.url || this.model.title){
+                        return;
+                    }
+
+                    axios.get('api/content/get-page-title?url=' + encodeURIComponent(this.model.url)).then((response) => {
+                        if(response.data){
+                            this.model.title = response.data;
+                        }
+                       
+                     });
+                },
+
                 submit(e){
                     e.preventDefault();
 
                     let rawContent = {
                         url: this.model.url,
-                        title: "TODO: exctract title"
+                        title: this.model.title
                     };
                     let raw = contentHelper.toStr(rawContent);
         
@@ -78,11 +95,13 @@ module.exports = {
                     "title": "Link",
                     "add": {
                         "headline": "Add link",
-                        "button": "submit"
+                        "button": "submit",
+                        "title_placeholder": "title"
                     },
                     "edit": {
                         "headline": "alter link",
-                        "button": "submit"
+                        "button": "submit",
+                        "title_placeholder": "title"
                     }
                 }
             }
@@ -93,11 +112,13 @@ module.exports = {
                     "title": "Link",
                     "add": {
                         "headline": "Link hinzufügen",
-                        "button": "speichern"
+                        "button": "speichern",
+                        "title_placeholder": "Beschreibung"
                     },
                     "edit": {
                         "headline": "Link bearbeiten",
-                        "button": "speichern"
+                        "button": "speichern",
+                        "title_placeholder": "Beschreibung"
                     }
                 }
             }

@@ -19,6 +19,7 @@ module.exports = {
 },{"./components/app.component":4,"./i18n":10}],2:[function(require,module,exports){
 const router = require("../lib/router");
 const app = require("../app");
+const contentHelper =  require("../lib/content-helper");
 
 module.exports = {
     template: `<div>
@@ -57,28 +58,28 @@ module.exports = {
                 this._updateContent("", raw);
              })
         },
-        _updateContent(content, raw){
-            if(content != ""){
-                content += "\n\r\n\r";
-            }
-
-            content += `---${this.type}---\n\r\n\r`;
-            content += raw;
+        _updateContent(contentString, raw){
+            let content = contentHelper.splitContent(contentString);
+            content.push({
+                type: this.type,
+                content: raw
+            });
+            let newIdx = content.length -1;
 
             axios.post(
                 `api/file?directory_id=${this.directoryId}&file_name=content.txt`, 
-                content,
+                contentHelper.implodeContent(content),
                 {
                     headers: { 
                         'Content-Type' : 'text/plain' 
                     }
                 }).then(() => {
-                window.location.href = `#/page?dir=${this.directoryId}`;
+                window.location.href = `#/page?dir=${this.directoryId}&idx=${newIdx}`;
             })
         }
     }
 }
-},{"../app":1,"../lib/router":13}],3:[function(require,module,exports){
+},{"../app":1,"../lib/content-helper":12,"../lib/router":13}],3:[function(require,module,exports){
 const router = require("../lib/router");
 
 module.exports = {
@@ -250,7 +251,7 @@ module.exports = {
                         'Content-Type' : 'text/plain' 
                     }
                 }).then(() => {
-                window.location.href = `#/page?dir=${this.directoryId}`;
+                window.location.href = `#/page?dir=${this.directoryId}&idx=${this.idx}`;
             })
         }
     }
@@ -260,8 +261,6 @@ module.exports = {
     template: `<div>404</div>`
 }
 },{}],8:[function(require,module,exports){
-//<a class="pull-right">&#9998;</a>
-
 const contentHelper =  require("../lib/content-helper");
 const router = require("../lib/router");
 const app = require("../app");
@@ -270,7 +269,8 @@ module.exports = {
     template: `<div>
         <h1>{{ title }}</h1>
 
-        <div v-for="comp in components" :comp="comp">
+        <div v-for="(comp, index) in components" :id="'content-' + index">
+                <a class="pull-right" :href="'#/edit/content?idx=' + index + '&dir=' + dir">&#9998;</a>
                 <component :is="getComponent(comp.type)" :raw="comp.content" />
         </div>
         
@@ -289,22 +289,31 @@ module.exports = {
     data() {
         return {
             title: "",
-            id: "",
+            dir: "",
             components: []
         }
     },
 
     mounted(){
         let route = router.getRoute();
-        this.id = route.query.dir;
+        this.dir = route.query.dir;
 
-        axios.get(`api/directory?id=${this.id}`).then((response) => {
+        axios.get(`api/directory?id=${this.dir}`).then((response) => {
            this.title = response.data.title;
         });
 
-        axios.get(`api/file?directory_id=${this.id}&file_name=content.txt`).then((response) => {
+        axios.get(`api/file?directory_id=${this.dir}&file_name=content.txt`).then((response) => {
             this.components = contentHelper.splitContent(response.data);
+            console.log(response.data);
+            console.log(this.components);
          })
+
+         if(route.query.idx){
+            setTimeout(() => {
+                var getMeTo = document.getElementById("content-" + route.query.idx);
+                getMeTo.scrollIntoView({behavior: 'smooth'}, true);
+            }, 300);
+         }
     }
 }
 },{"../app":1,"../lib/content-helper":12,"../lib/router":13}],9:[function(require,module,exports){
@@ -392,15 +401,25 @@ module.exports = {
         let splitRegex =  /---[\w]*---[^---]*/gs;
         let extractRegex =  /---([\w]*)---(.*)/s;
         
-        var groups = content.match(splitRegex);
+        var splitContent = content.split(/---(\w*)---/);
         
-        groups.forEach((group)=> {
-          let parts = extractRegex.exec(group)
-        
-          returnValue.push({
-            type: parts[1].toLowerCase(),
-            content: parts[2].trim()
-          });
+        var type = "";
+        splitContent.forEach((value, idx)=> {
+            if(!type && !value){
+                return;
+            }
+
+            if(!type){
+                type = value;
+                return;
+            }
+
+            returnValue.push({
+                type: type.toLowerCase(),
+                content: value.trim()
+            });
+
+            type = "";
         });
 
         return returnValue;
@@ -489,7 +508,9 @@ module.exports = {
             },
 
             mounted(){
-                var value = contentHelper.toObject(this.raw)
+                
+                var value = contentHelper.toObject(this.raw);
+                console.log("link", this.raw, value);
                 this.title = value.title;
                 this.url = value.url;
             },
@@ -501,6 +522,7 @@ module.exports = {
                 <form v-on:submit="submit">
                     <h1>{{ $t("type.link." + mode + ".headline") }}</h1>
                     <input v-model="model.url" type="text" placeholder="https://www......" />
+                    <input v-model="model.title" @focus="loadTitle()" type="text" :placeholder='$t("type.link." + mode + ".title_placeholder")' />
                     <button type="submit">{{ $t("type.link." + mode + ".button") }}</button>
                 </form>
             </div>`,   
@@ -508,7 +530,8 @@ module.exports = {
             data() {
                 return {
                     model: {
-                        url: ""
+                        url: "",
+                        title: ""
                     },
                     mode: "add"
                 }
@@ -530,12 +553,25 @@ module.exports = {
             },
 
             methods: {
+                loadTitle(){
+                    if(!this.model.url || this.model.title){
+                        return;
+                    }
+
+                    axios.get('api/content/get-page-title?url=' + encodeURIComponent(this.model.url)).then((response) => {
+                        if(response.data){
+                            this.model.title = response.data;
+                        }
+                       
+                     });
+                },
+
                 submit(e){
                     e.preventDefault();
 
                     let rawContent = {
                         url: this.model.url,
-                        title: "TODO: exctract title"
+                        title: this.model.title
                     };
                     let raw = contentHelper.toStr(rawContent);
         
@@ -551,11 +587,13 @@ module.exports = {
                     "title": "Link",
                     "add": {
                         "headline": "Add link",
-                        "button": "submit"
+                        "button": "submit",
+                        "title_placeholder": "title"
                     },
                     "edit": {
                         "headline": "alter link",
-                        "button": "submit"
+                        "button": "submit",
+                        "title_placeholder": "title"
                     }
                 }
             }
@@ -566,11 +604,13 @@ module.exports = {
                     "title": "Link",
                     "add": {
                         "headline": "Link hinzufügen",
-                        "button": "speichern"
+                        "button": "speichern",
+                        "title_placeholder": "Beschreibung"
                     },
                     "edit": {
                         "headline": "Link bearbeiten",
-                        "button": "speichern"
+                        "button": "speichern",
+                        "title_placeholder": "Beschreibung"
                     }
                 }
             }
@@ -578,13 +618,17 @@ module.exports = {
     }
 }
 },{"../lib/content-helper":12}],15:[function(require,module,exports){
+const contentHelper = require("../lib/content-helper");
+
+var editor;
+
 module.exports = {
     "name": "text",
     "sortNumber": 2,
     "components": {
         "render": {
             template: `<div>Text
-                {{ text }}
+                <div v-html="text"></div>
             </div>`,
             data() {
                 return {
@@ -593,36 +637,76 @@ module.exports = {
             },
 
             mounted(){
-                this.text = this.raw;
+                this.text = marked.parse(this.raw);
             },
 
             props: ["raw"],
         },
-        "create": {
-            template: `<div> </div>`,   
-        },
-        "update": {
-            template: `<div> </div>`, 
-        },
-        "delete": {
-            template: `<div> </div>`,
+        "alter": {
+            template: `<div>
+                <form v-on:submit="submit">
+                    <h1>{{ $t("type.text." + mode + ".headline") }}</h1>
+                    <textarea id="editor"></textarea>
+                    <button type="submit">{{ $t("type.text." + mode + ".button") }}</button>
+                </form>
+            </div>`,   
+
+            data() {
+                return {
+                    mode: "add"
+                }
+            },
+
+            props: ["onSubmit", "input"],
+
+            mounted(){
+                editor = new SimpleMDE({ element: document.getElementById("editor") });
+                editor.value(this.input);
+
+                if(this.input){
+                    this.mode = "edit";
+                }              
+            },
+
+            methods: {
+                submit(e){
+                    e.preventDefault();
+                    this.onSubmit(editor.value());
+                }
+            }
         }
     },
     "translations": {
         "en": {
             "type": {
                 "text": {
-                    "title": "Text"
+                    "title": "Text",
+                    "add": {
+                        "headline": "Add text",
+                        "button": "submit"
+                    },
+                    "edit": {
+                        "headline": "alter text",
+                        "button": "submit"
+                    }
                 }
             }
         },
         "de": {
             "type": {
                 "text": {
-                    "title": "Text"
+                    "title": "Text",
+                    "add": {
+                        "headline": "Text hinzufügen",
+                        "button": "speichern"
+                    },
+                    "edit": {
+                        "headline": "Text bearbeiten",
+                        "button": "speichern"
+                    }
                 }
             }
         }
     }
 }
-},{}]},{},[11]);
+},{"../lib/content-helper":12}]},{},[11]);

@@ -16,7 +16,9 @@ function buildVendorScripts(){
   return gulp.src([
     './js/vendor/vue.global.js',
     './js/vendor/vue-i18n.global.js',
-    './js/vendor/axios.min.js'])
+    './js/vendor/axios.min.js',
+    './js/vendor/simplemde.min.js',
+    './js/vendor/marked.min.js'])
     .pipe(concat('vendor.js'))
     .pipe(gulp.dest('./dist'));
 }
@@ -38,7 +40,11 @@ function watchFiles(cb) {
   });
 
   watch('./js/**/*.js', function(){
-    gulp.series(buildScripts, buildVendorScripts)();
+    try {
+        gulp.series(buildScripts, buildVendorScripts)();
+    } catch (error) {
+        console.log(error);
+    }
   });
 }
 

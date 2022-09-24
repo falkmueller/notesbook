@@ -1,5 +1,6 @@
 const router = require("../lib/router");
 const app = require("../app");
+const contentHelper =  require("../lib/content-helper");
 
 module.exports = {
     template: `<div>
@@ -38,23 +39,23 @@ module.exports = {
                 this._updateContent("", raw);
              })
         },
-        _updateContent(content, raw){
-            if(content != ""){
-                content += "\n\r\n\r";
-            }
-
-            content += `---${this.type}---\n\r\n\r`;
-            content += raw;
+        _updateContent(contentString, raw){
+            let content = contentHelper.splitContent(contentString);
+            content.push({
+                type: this.type,
+                content: raw
+            });
+            let newIdx = content.length -1;
 
             axios.post(
                 `api/file?directory_id=${this.directoryId}&file_name=content.txt`, 
-                content,
+                contentHelper.implodeContent(content),
                 {
                     headers: { 
                         'Content-Type' : 'text/plain' 
                     }
                 }).then(() => {
-                window.location.href = `#/page?dir=${this.directoryId}`;
+                window.location.href = `#/page?dir=${this.directoryId}&idx=${newIdx}`;
             })
         }
     }

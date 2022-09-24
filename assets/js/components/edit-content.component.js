@@ -58,7 +58,7 @@ module.exports = {
                         'Content-Type' : 'text/plain' 
                     }
                 }).then(() => {
-                window.location.href = `#/page?dir=${this.directoryId}`;
+                window.location.href = `#/page?dir=${this.directoryId}&idx=${this.idx}`;
             })
         }
     }

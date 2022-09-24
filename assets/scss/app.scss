@@ -3,6 +3,7 @@
 @import "components/app";
 @import "components/content-table";
 @import "components/select-type";
+@import "vendor/simplemde.min";
 
 h1 {
     font-size: min(3.6em, 10vw)

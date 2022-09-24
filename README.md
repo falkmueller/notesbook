@@ -1,13 +1,11 @@
 # Notesbook
 
 ## TODO
-- edit hover einbauen
-- nach create/edit an die entsprechende Stelle springen
-- Titel bei link bilden
-- Text component einbauen
+
+- alles stylen
 - löschen einbauen
 - file component einbauen
-- edit con kategorie einbauen
+- edit von kategorie einbauen
 - sortierung einbauen
 
 ## Keykords

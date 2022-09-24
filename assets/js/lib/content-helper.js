@@ -6,15 +6,25 @@ module.exports = {
         let splitRegex =  /---[\w]*---[^---]*/gs;
         let extractRegex =  /---([\w]*)---(.*)/s;
         
-        var groups = content.match(splitRegex);
+        var splitContent = content.split(/---(\w*)---/);
         
-        groups.forEach((group)=> {
-          let parts = extractRegex.exec(group)
-        
-          returnValue.push({
-            type: parts[1].toLowerCase(),
-            content: parts[2].trim()
-          });
+        var type = "";
+        splitContent.forEach((value, idx)=> {
+            if(!type && !value){
+                return;
+            }
+
+            if(!type){
+                type = value;
+                return;
+            }
+
+            returnValue.push({
+                type: type.toLowerCase(),
+                content: value.trim()
+            });
+
+            type = "";
         });
 
         return returnValue;
