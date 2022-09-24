@@ -6,8 +6,8 @@ module.exports = {
     template: `<div>
         <h1>{{ title }}</h1>
 
-        <div v-for="(comp, index) in components" :id="'content-' + index">
-                <a class="pull-right" :href="'#/edit/content?idx=' + index + '&dir=' + dir">&#9998;</a>
+        <div v-for="(comp, index) in components" :class="'content content-' + comp.type" :id="'content-' + index">
+                <a class="btn-edit" :href="'#/edit/content?idx=' + index + '&dir=' + dir">&#9998;</a>
                 <component :is="getComponent(comp.type)" :raw="comp.content" />
         </div>
         

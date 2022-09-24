@@ -5,13 +5,16 @@ module.exports = {
     "sortNumber": 1,
     "components": {
         "render": {
-            template: `<div>link
-                <a :href="url">{{ title }}</a>
-            </div>`,
+            template: `
+                <a :href="url">
+                    <span class="title">{{ title }}</span>
+                    <span class="url">&#128279; {{baseUrl}}</span>
+                </a>`,
             data() {
                 return {
                     url: "",
-                    title: ""
+                    title: "",
+                    baseUrl: ""
                 }
             },
 
@@ -21,6 +24,12 @@ module.exports = {
                 console.log("link", this.raw, value);
                 this.title = value.title;
                 this.url = value.url;
+                try {
+                    this.baseUrl = (new URL(value.url)).host;
+                } catch (error) {
+                    this.baseUrl = value.url;
+                }
+                
             },
 
             props: ["raw"],

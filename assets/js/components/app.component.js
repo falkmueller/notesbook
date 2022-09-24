@@ -5,8 +5,10 @@ module.exports = {
     template: `<div class="container">
         <component :is="currentView" />
 
-        <a class="btn-add" :href="addRoute">+</a>
-        <a v-if="route.path != '/'" class="btn-overview" href="#/">&#9776;</a>
+        <div class="bar">
+            <a class="btn" :href="addRoute">+</a>
+            <a v-if="route.path != '/'" class="btn" :href="backLink" v-html="backSymbol"></a>
+        </div>
     </div>`,
 
     computed: {
@@ -20,6 +22,20 @@ module.exports = {
         },
         currentView() {
             return router.routes[this.route.path] || notFoundComponent
+        },
+        backLink(){
+            if(this.route.query.dir && this.route.path != '/page'){
+                return `#/page?dir=${this.route.query.dir}`;
+            }
+
+            return "#/"
+        },
+        backSymbol(){
+            if(this.route.query.dir && this.route.path != '/page'){
+                return "&#10094;";
+            }
+
+            return "&#9776;";
         }
     },
 

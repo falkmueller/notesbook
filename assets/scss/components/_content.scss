@@ -1,0 +1,29 @@
+.content {
+    margin-bottom: 1em;
+
+    .btn-edit {
+        float: right;
+        color: var(--color-tertiary);
+
+        &:hover {
+            color: var(--color-secondary);
+        }
+    }
+
+    &-link {
+        .title, .url {
+            display: block;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .url {
+            font-size: 0.8em;
+        }
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}

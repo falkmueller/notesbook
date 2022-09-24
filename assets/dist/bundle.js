@@ -124,8 +124,10 @@ module.exports = {
     template: `<div class="container">
         <component :is="currentView" />
 
-        <a class="btn-add" :href="addRoute">+</a>
-        <a v-if="route.path != '/'" class="btn-overview" href="#/">&#9776;</a>
+        <div class="bar">
+            <a class="btn" :href="addRoute">+</a>
+            <a v-if="route.path != '/'" class="btn" :href="backLink" v-html="backSymbol"></a>
+        </div>
     </div>`,
 
     computed: {
@@ -139,6 +141,20 @@ module.exports = {
         },
         currentView() {
             return router.routes[this.route.path] || notFoundComponent
+        },
+        backLink(){
+            if(this.route.query.dir && this.route.path != '/page'){
+                return `#/page?dir=${this.route.query.dir}`;
+            }
+
+            return "#/"
+        },
+        backSymbol(){
+            if(this.route.query.dir && this.route.path != '/page'){
+                return "&#10094;";
+            }
+
+            return "&#9776;";
         }
     },
 
@@ -269,8 +285,8 @@ module.exports = {
     template: `<div>
         <h1>{{ title }}</h1>
 
-        <div v-for="(comp, index) in components" :id="'content-' + index">
-                <a class="pull-right" :href="'#/edit/content?idx=' + index + '&dir=' + dir">&#9998;</a>
+        <div v-for="(comp, index) in components" :class="'content content-' + comp.type" :id="'content-' + index">
+                <a class="btn-edit" :href="'#/edit/content?idx=' + index + '&dir=' + dir">&#9998;</a>
                 <component :is="getComponent(comp.type)" :raw="comp.content" />
         </div>
         
@@ -497,13 +513,16 @@ module.exports = {
     "sortNumber": 1,
     "components": {
         "render": {
-            template: `<div>link
-                <a :href="url">{{ title }}</a>
-            </div>`,
+            template: `
+                <a :href="url">
+                    <span class="title">{{ title }}</span>
+                    <span class="url">&#128279; {{baseUrl}}</span>
+                </a>`,
             data() {
                 return {
                     url: "",
-                    title: ""
+                    title: "",
+                    baseUrl: ""
                 }
             },
 
@@ -513,6 +532,12 @@ module.exports = {
                 console.log("link", this.raw, value);
                 this.title = value.title;
                 this.url = value.url;
+                try {
+                    this.baseUrl = (new URL(value.url)).host;
+                } catch (error) {
+                    this.baseUrl = value.url;
+                }
+                
             },
 
             props: ["raw"],
