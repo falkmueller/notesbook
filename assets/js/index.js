@@ -9,4 +9,5 @@ router.routes['/page'] = require("./components/page.component");
 var app = require("./app");
 app.types.push(require("./types/link.type"));
 app.types.push(require("./types/text.type"));
+app.types.push(require("./types/file.type"));
 app.run()

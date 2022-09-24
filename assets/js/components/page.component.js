@@ -7,7 +7,14 @@ module.exports = {
         <h1>{{ title }}</h1>
 
         <div v-for="(comp, index) in components" :class="'content content-' + comp.type" :id="'content-' + index">
-                <a class="btn-edit" :href="'#/edit/content?idx=' + index + '&dir=' + dir">&#9998;</a>
+                <div class="dropdown">
+                    <button class="link">&#8942;</button>
+                    <div class="dropdown-content">
+                        <a :href="'#/edit/content?idx=' + index + '&dir=' + dir"><span>&#9998;</span> bearbeiten</a>
+                        <a @click="deleteContent(index)"><span>&#120;</span> löschen</a>
+                    </div>
+                </div>
+                
                 <component :is="getComponent(comp.type)" :raw="comp.content" />
         </div>
         
@@ -20,6 +27,27 @@ module.exports = {
                 return {template: `<div>type ${type} not implemented</div>`}
             }
             return typeObj.components.render;
+        },
+
+        deleteContent: function(idx){
+            console.log("delete content");
+            var isConfirm = confirm(this.$t("delete_message"));
+            if(!isConfirm){
+                return;
+            }
+
+            this.components.splice(idx, 1);
+
+            let fileContent = contentHelper.implodeContent(this.components);
+
+            axios.post(
+                `api/file?directory_id=${this.dir}&file_name=content.txt`, 
+                fileContent,
+                {
+                    headers: { 
+                        'Content-Type' : 'text/plain' 
+                    }
+                })
         }
       },
 

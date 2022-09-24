@@ -2,9 +2,7 @@
 
 ## TODO
 
-- löschen einbauen
-- file component einbauen
-- edit von kategorie einbauen
+- edit/delete von kategorie einbauen
 - sortierung einbauen
 - authorisierung
 

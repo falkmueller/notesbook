@@ -7,7 +7,8 @@ const messages = {
             subdirectory: {
                 title: "Subsection"
             }
-        }
+        },
+        "delete_message": "delete?"
     },
     de: {
         contentTable: {
@@ -17,7 +18,8 @@ const messages = {
             subdirectory: {
                 title: "Unterkategorie"
             }
-        }
+        },
+        "delete_message": "wirklich löschen?"
     }
   }
 
