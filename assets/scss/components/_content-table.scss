@@ -17,10 +17,12 @@
             background-color: var(--color-tertiary);
         }
 
-        > span:first-child {
+        > span.title {
             flex-grow: 2;
             position: relative;
             overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
 
             span::after  {
                 position: absolute;
@@ -33,6 +35,14 @@
                     ". . . . . . . . . . . . . . . . . . . . . . . "
                     ". . . . . . . . . . . . . . . . . . . . . . . ";
                 text-align: right;
+            }
+        }
+    }
+
+    .dropdown {
+        &-right {    
+            > .link {
+                padding: 0 0 0 1em;
             }
         }
     }

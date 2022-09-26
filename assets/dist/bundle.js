@@ -16,107 +16,7 @@ module.exports = {
         this.vueApp.mount('#app');
     }
 }
-},{"./components/app.component":4,"./i18n":10}],2:[function(require,module,exports){
-const router = require("../lib/router");
-const app = require("../app");
-const contentHelper =  require("../lib/content-helper");
-
-module.exports = {
-    template: `<div>
-        <component :is="getComponent(type)" :onSubmit="(raw) => {submit(raw);}" />
-    </div>`,
-
-    data() {
-        return {
-            directoryId: null,
-            type: null
-        }
-    },
-
-    mounted(){
-        let route = router.getRoute();
-        this.directoryId = route.query.dir;
-        this.type = route.query.type;
-    },
-
-
-    methods: {
-        getComponent: function (type) {
-            var typeObj = app.types.find(x => x.name == type);
-            if(!typeObj){
-                return {template: `<div>type ${type} not implemented</div>`}
-            }
-            return typeObj.components.alter;
-        },
-
-        submit(raw){
-            console.log("submit", this.directoryId, raw);
-
-            axios.get(`api/file?directory_id=${this.directoryId}&file_name=content.txt`).then((response) => {
-                this._updateContent(response.data, raw);
-             }, () => {
-                this._updateContent("", raw);
-             })
-        },
-        _updateContent(contentString, raw){
-            let content = contentHelper.splitContent(contentString);
-            content.push({
-                type: this.type,
-                content: raw
-            });
-            let newIdx = content.length -1;
-
-            axios.post(
-                `api/file?directory_id=${this.directoryId}&file_name=content.txt`, 
-                contentHelper.implodeContent(content),
-                {
-                    headers: { 
-                        'Content-Type' : 'text/plain' 
-                    }
-                }).then(() => {
-                window.location.href = `#/page?dir=${this.directoryId}&idx=${newIdx}`;
-            })
-        }
-    }
-}
-},{"../app":1,"../lib/content-helper":12,"../lib/router":13}],3:[function(require,module,exports){
-const router = require("../lib/router");
-
-module.exports = {
-    template: `<div>
-        <form v-on:submit="submit">
-            <h1>{{ $t("type.subdirectory.title") }}</h1>
-            <input v-model="model.title" type="text" />
-            <button type="submit">submit</button>
-        </form>
-    </div>`,
-
-    data() {
-        return {
-            model: {
-                title: ""
-            }
-        }
-    },
-
-
-    methods: {
-        submit(e){
-            e.preventDefault();
-
-            let route = router.getRoute();
-          
-            axios.post('api/directory', {
-                title: this.model.title,
-                parent_id: route.query.dir || ""
-            }).then(function(){
-                window.location.href = "#/";
-            })
-        }
-    }
-
-}
-},{"../lib/router":13}],4:[function(require,module,exports){
+},{"./components/app.component":2,"./i18n":11}],2:[function(require,module,exports){
 const router = require("../lib/router");
 const notFoundComponent = require("./not-found.component");
 
@@ -134,7 +34,7 @@ module.exports = {
         addRoute(){
             if((this.route.query.dir || '') == '')
             {
-                return "#/add/directory";
+                return "#/directory/add";
             }
 
             return '#/add?dir=' + this.route.query.dir;
@@ -170,46 +70,159 @@ module.exports = {
         }
     }
 }
-},{"../lib/router":13,"./not-found.component":7}],5:[function(require,module,exports){
+},{"../lib/router":14,"./not-found.component":8}],3:[function(require,module,exports){
 const app = require("../app");
 
 app.vueApp.component('ContentTableItem', {
     template: `<ul>
-            <li v-for="node in root.childs" :key="node.id" :node="node">
-                <a  :href="'#/page?dir=' + node.id"><span>{{ node.title }}<span></span></span><span style="display:none">{{ node.childs.length }}</span></a>
-                <ContentTableItem v-if="node.childs && node.childs.length > 0" :root="node" />
+            <li v-for="node in root.children" :key="node.id" :node="node">
+            <div class="dropdown dropdown-right">
+                <button class="link">&#8942;</button>
+                <div class="dropdown-content">
+                    <a :href="'#/directory/edit?dir=' + node.id" ><span>&#9998;</span> bearbeiten</a>
+                    <a @click="deleteDir(node.id)"><span>&#120;</span> löschen</a>
+                    <div>
+                        <a @click="moveDir(node.id, -1, false)"><span>&#129081;</span></a>
+                        <a @click="moveDir(node.id, 1, false)"><span>&#129083;</span></a>
+                        <a @click="moveDir(node.id, -1, true)"><span>&#129080;</span></a>
+                        <a @click="moveDir(node.id, 1, true)"><span>&#129082;</span></a>
+                    </div>
+                </div>
+            </div>
+                <a :href="'#/page?dir=' + node.id"><span class="title">{{ node.title }}<span></span></span></a>
+                <ContentTableItem v-if="node.children && node.children.length > 0" :root="node" :onReload="onReload" />
             </li>
         </ul>`,
     
-    props: {
-        root: {},
+    props: ["root", "onReload"],
+
+    methods: {
+        deleteDir(directoryId){
+            var isConfirm = confirm(this.$t("delete_message"));
+            if(!isConfirm){
+                return;
+            }
+    
+            axios.delete(`api/directory?id=${directoryId}`).then(()=>{
+                this.onReload();
+            })
         },
+
+        moveDir(directoryId, direction, moveLevel){
+            axios.patch(`api/directory/move`, {
+                id: directoryId,
+                direction: direction,
+                moveLevel: moveLevel
+            }).then(()=>{
+                this.onReload();
+            })
+        },
+    }
+    
 });
 
 module.exports = {
     template: `<div class="content-table">
         <h1>{{ $t("contentTable.headline") }}</h1>
-        <ContentTableItem :root="root"  />
+        <ContentTableItem :root="root" :onReload="load" />
     </div>`,
 
     data() {
         return {
             root: {
-                childs: []
+                children: []
             }
         }
     },
 
     mounted(){
-        axios.get('api').then((response) => {
-           this.root = response.data;
-        })
+        this.load();
+    },
+
+    methods: {
+        load(){
+            axios.get('api/').then((response) => {
+                this.root.children = response.data;
+             })
+        },
+
+        deleteDir(directoryId){
+            var isConfirm = confirm(this.$t("delete_message"));
+            if(!isConfirm){
+                return;
+            }
+
+            axios.delete(`api/directory?id=${directoryId}`).then(function(){
+                this.load();
+            })
+        },
     }
 };
-},{"../app":1}],6:[function(require,module,exports){
-const router = require("../lib/router");
-const app = require("../app");
-const contentHelper = require("../lib/content-helper");
+},{"../app":1}],4:[function(require,module,exports){
+const router = require("../../lib/router");
+const app = require("../../app");
+const contentHelper =  require("../../lib/content-helper");
+
+module.exports = {
+    template: `<div>
+        <component :is="getComponent(type)" :onSubmit="(raw) => {submit(raw);}" />
+    </div>`,
+
+    data() {
+        return {
+            directoryId: null,
+            type: null
+        }
+    },
+
+    mounted(){
+        let route = router.getRoute();
+        this.directoryId = route.query.dir;
+        this.type = route.query.type;
+    },
+
+
+    methods: {
+        getComponent: function (type) {
+            var typeObj = app.types.find(x => x.name == type);
+            if(!typeObj){
+                return {template: `<div>type ${type} not implemented</div>`}
+            }
+            return typeObj.components.alter;
+        },
+
+        submit(raw){
+            axios.get(`api/file?directory_id=${this.directoryId}&file_name=content.txt`).then((response) => {
+                this._updateContent(response.data, raw);
+             }, () => {
+                this._updateContent("", raw);
+             })
+        },
+        _updateContent(contentString, raw){
+            let content = contentHelper.splitContent(contentString);
+            content.push({
+                type: this.type,
+                content: raw
+            });
+            let newIdx = content.length -1;
+
+            axios.post(
+                `api/file?directory_id=${this.directoryId}&file_name=content.txt`, 
+                contentHelper.implodeContent(content),
+                {
+                    headers: { 
+                        'Content-Type' : 'text/plain' 
+                    }
+                }).then(() => {
+                window.location.href = `#/page?dir=${this.directoryId}&idx=${newIdx}`;
+            })
+        }
+    }
+}
+},{"../../app":1,"../../lib/content-helper":13,"../../lib/router":14}],5:[function(require,module,exports){
+const router = require("../../lib/router");
+const app = require("../../app");
+const contentHelper = require("../../lib/content-helper");
 
 module.exports = {
     template: `<div>
@@ -253,8 +266,6 @@ module.exports = {
         },
 
         submit(raw){
-            console.log("submit", this.directoryId, raw);
-
             this.content[this.idx].content = raw;
            
             let fileContent = contentHelper.implodeContent(this.content);
@@ -272,11 +283,93 @@ module.exports = {
         }
     }
 }
-},{"../app":1,"../lib/content-helper":12,"../lib/router":13}],7:[function(require,module,exports){
+},{"../../app":1,"../../lib/content-helper":13,"../../lib/router":14}],6:[function(require,module,exports){
+const router = require("../../lib/router");
+
+module.exports = {
+    template: `<div>
+        <form v-on:submit="submit">
+            <h1>{{ $t("type.subdirectory.title") }}</h1>
+            <input v-model="model.title" type="text" />
+            <button type="submit">submit</button>
+        </form>
+    </div>`,
+
+    data() {
+        return {
+            model: {
+                title: ""
+            }
+        }
+    },
+
+
+    methods: {
+        submit(e){
+            e.preventDefault();
+
+            let route = router.getRoute();
+          
+            axios.post('api/directory', {
+                title: this.model.title,
+                parent_id: route.query.dir || ""
+            }).then(function(response){
+                window.location.href = `#/page?dir=${response.data}`;
+            })
+        }
+    }
+
+}
+},{"../../lib/router":14}],7:[function(require,module,exports){
+const router = require("../../lib/router");
+
+module.exports = {
+    template: `<div>
+        <form v-on:submit="submit">
+            <h1>{{ $t("type.subdirectory.title") }}</h1>
+            <input v-model="model.title" type="text" />
+            <button type="submit">submit</button>
+        </form>
+    </div>`,
+
+    data() {
+        return {
+            model: {
+                title: ""
+            },
+            directoryId: ""
+        }
+    },
+
+    mounted(){
+        let route = router.getRoute();
+        this.directoryId = route.query.dir;
+        
+        axios.get(`api/directory?id=${this.directoryId}`).then((response) => {
+            this.model.title = response.data.title;
+        });
+    },
+
+
+    methods: {
+        submit(e){
+            e.preventDefault();
+          
+            axios.patch('api/directory', {
+                title: this.model.title,
+                id: this.directoryId
+            }).then(function(){
+                window.location.href = "#/";
+            })
+        }
+    }
+
+}
+},{"../../lib/router":14}],8:[function(require,module,exports){
 module.exports = {
     template: `<div>404</div>`
 }
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 const contentHelper =  require("../lib/content-helper");
 const router = require("../lib/router");
 const app = require("../app");
@@ -286,15 +379,17 @@ module.exports = {
         <h1>{{ title }}</h1>
 
         <div v-for="(comp, index) in components" :class="'content content-' + comp.type" :id="'content-' + index">
-                <div class="dropdown">
-                    <button class="link">&#8942;</button>
-                    <div class="dropdown-content">
-                        <a :href="'#/edit/content?idx=' + index + '&dir=' + dir"><span>&#9998;</span> bearbeiten</a>
-                        <a @click="deleteContent(index)"><span>&#120;</span> löschen</a>
-                    </div>
+            <div class="dropdown dropdown-right">
+                <button class="link">&#8942;</button>
+                <div class="dropdown-content">
+                    <a :href="'#/content/edit?idx=' + index + '&dir=' + dir"><span>&#9998;</span> bearbeiten</a>
+                    <a @click="deleteContent(index)"><span>&#120;</span> löschen</a>
+                    <a v-if="index > 0" @click="changeItems(index, index -1)"><span>&#129081;</span> höher</a>
+                    <a v-if="index < components.length - 1" @click="changeItems(index, index + 1)"><span>&#129083;</span> runter</a>
                 </div>
-                
-                <component :is="getComponent(comp.type)" :raw="comp.content" />
+            </div>
+            
+            <component :is="getComponent(comp.type)" :raw="comp.content" />
         </div>
         
     </div>`,
@@ -309,7 +404,6 @@ module.exports = {
         },
 
         deleteContent: function(idx){
-            console.log("delete content");
             var isConfirm = confirm(this.$t("delete_message"));
             if(!isConfirm){
                 return;
@@ -317,6 +411,18 @@ module.exports = {
 
             this.components.splice(idx, 1);
 
+            this._updateRemote();
+        },
+
+        changeItems(idx1, idx2){
+            let temp = this.components[idx1];
+            this.components[idx1] = this.components[idx2];
+            this.components[idx2] = temp;
+
+            this._updateRemote();
+        },
+
+        _updateRemote(){
             let fileContent = contentHelper.implodeContent(this.components);
 
             axios.post(
@@ -326,7 +432,7 @@ module.exports = {
                     headers: { 
                         'Content-Type' : 'text/plain' 
                     }
-                })
+                });
         }
       },
 
@@ -348,8 +454,6 @@ module.exports = {
 
         axios.get(`api/file?directory_id=${this.dir}&file_name=content.txt`).then((response) => {
             this.components = contentHelper.splitContent(response.data);
-            console.log(response.data);
-            console.log(this.components);
          })
 
          if(route.query.idx){
@@ -360,16 +464,16 @@ module.exports = {
          }
     }
 }
-},{"../app":1,"../lib/content-helper":12,"../lib/router":13}],9:[function(require,module,exports){
+},{"../app":1,"../lib/content-helper":13,"../lib/router":14}],10:[function(require,module,exports){
 const router = require("../lib/router");
 const app = require("../app");
 
 module.exports = {
     template: `<div class="select-type">
-        <a v-for="t in types" :key="t.name" :t="t" :href="'#/add/content?type=' + t.name + '&dir=' + (route.query.dir || '')">
+        <a v-for="t in types" :key="t.name" :t="t" :href="'#/content/add?type=' + t.name + '&dir=' + (route.query.dir || '')">
             {{ $t("type." + t.name + ".title") }}
         </a>
-        <a :href="'#/add/directory?dir=' + (route.query.dir || '/')">
+        <a :href="'#/directory/add?dir=' + (route.query.dir || '/')">
             {{ $t("type.subdirectory.title") }}
         </a>
     </div>`,
@@ -388,7 +492,7 @@ module.exports = {
         }
     }
 };
-},{"../app":1,"../lib/router":13}],10:[function(require,module,exports){
+},{"../app":1,"../lib/router":14}],11:[function(require,module,exports){
 const messages = {
     en: {
         contentTable: {
@@ -425,13 +529,14 @@ const messages = {
         })
     }
   }
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 var router = require("./lib/router");
 router.routes['/'] = require("./components/content-table.compnent");
 router.routes['/add'] = require("./components/select-type.component");
-router.routes['/add/directory'] = require("./components/add-directory.component");;
-router.routes['/add/content'] = require("./components/add-content.component");
-router.routes['/edit/content'] = require("./components/edit-content.component");
+router.routes['/directory/add'] = require("./components/directory/add-directory.component");
+router.routes['/directory/edit'] = require("./components/directory/edit-directory.component");
+router.routes['/content/add'] = require("./components/content/add-content.component");
+router.routes['/content/edit'] = require("./components/content/edit-content.component");
 router.routes['/page'] = require("./components/page.component");
 
 var app = require("./app");
@@ -439,7 +544,7 @@ app.types.push(require("./types/link.type"));
 app.types.push(require("./types/text.type"));
 app.types.push(require("./types/file.type"));
 app.run()
-},{"./app":1,"./components/add-content.component":2,"./components/add-directory.component":3,"./components/content-table.compnent":5,"./components/edit-content.component":6,"./components/page.component":8,"./components/select-type.component":9,"./lib/router":13,"./types/file.type":14,"./types/link.type":15,"./types/text.type":16}],12:[function(require,module,exports){
+},{"./app":1,"./components/content-table.compnent":3,"./components/content/add-content.component":4,"./components/content/edit-content.component":5,"./components/directory/add-directory.component":6,"./components/directory/edit-directory.component":7,"./components/page.component":9,"./components/select-type.component":10,"./lib/router":14,"./types/file.type":15,"./types/link.type":16,"./types/text.type":17}],13:[function(require,module,exports){
 module.exports = {
 
     splitContent(content){
@@ -522,7 +627,7 @@ module.exports = {
         return response;
     }
 };
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 module.exports = {
     routes: {},
 
@@ -536,7 +641,7 @@ module.exports = {
         }
     }
 }
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 const contentHelper = require("../lib/content-helper");
 const router = require("../lib/router");
 
@@ -730,7 +835,7 @@ module.exports = {
         }
     }
 }
-},{"../lib/content-helper":12,"../lib/router":13}],15:[function(require,module,exports){
+},{"../lib/content-helper":13,"../lib/router":14}],16:[function(require,module,exports){
 const contentHelper = require("../lib/content-helper");
 
 module.exports = {
@@ -739,7 +844,7 @@ module.exports = {
     "components": {
         "render": {
             template: `
-                <a :href="url">
+                <a target="_blank" :href="url">
                     <span class="title">{{ title }}</span>
                     <span class="url">&#128279; {{baseUrl}}</span>
                 </a>`,
@@ -754,7 +859,6 @@ module.exports = {
             mounted(){
                 
                 var value = contentHelper.toObject(this.raw);
-                console.log("link", this.raw, value);
                 this.title = value.title;
                 this.url = value.url;
                 try {
@@ -793,8 +897,6 @@ module.exports = {
                 if(!this.input){
                     return;
                 }
-
-                console.log("load content", this.input);
 
                 var value = contentHelper.toObject(this.input)
                 this.model.title = value.title;
@@ -867,7 +969,7 @@ module.exports = {
         }
     }
 }
-},{"../lib/content-helper":12}],16:[function(require,module,exports){
+},{"../lib/content-helper":13}],17:[function(require,module,exports){
 const contentHelper = require("../lib/content-helper");
 
 var editor;
@@ -959,4 +1061,4 @@ module.exports = {
         }
     }
 }
-},{"../lib/content-helper":12}]},{},[11]);
+},{"../lib/content-helper":13}]},{},[12]);

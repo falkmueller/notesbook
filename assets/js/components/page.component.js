@@ -7,15 +7,17 @@ module.exports = {
         <h1>{{ title }}</h1>
 
         <div v-for="(comp, index) in components" :class="'content content-' + comp.type" :id="'content-' + index">
-                <div class="dropdown">
-                    <button class="link">&#8942;</button>
-                    <div class="dropdown-content">
-                        <a :href="'#/edit/content?idx=' + index + '&dir=' + dir"><span>&#9998;</span> bearbeiten</a>
-                        <a @click="deleteContent(index)"><span>&#120;</span> löschen</a>
-                    </div>
+            <div class="dropdown dropdown-right">
+                <button class="link">&#8942;</button>
+                <div class="dropdown-content">
+                    <a :href="'#/content/edit?idx=' + index + '&dir=' + dir"><span>&#9998;</span> bearbeiten</a>
+                    <a @click="deleteContent(index)"><span>&#120;</span> löschen</a>
+                    <a v-if="index > 0" @click="changeItems(index, index -1)"><span>&#129081;</span> höher</a>
+                    <a v-if="index < components.length - 1" @click="changeItems(index, index + 1)"><span>&#129083;</span> runter</a>
                 </div>
-                
-                <component :is="getComponent(comp.type)" :raw="comp.content" />
+            </div>
+            
+            <component :is="getComponent(comp.type)" :raw="comp.content" />
         </div>
         
     </div>`,
@@ -30,7 +32,6 @@ module.exports = {
         },
 
         deleteContent: function(idx){
-            console.log("delete content");
             var isConfirm = confirm(this.$t("delete_message"));
             if(!isConfirm){
                 return;
@@ -38,6 +39,18 @@ module.exports = {
 
             this.components.splice(idx, 1);
 
+            this._updateRemote();
+        },
+
+        changeItems(idx1, idx2){
+            let temp = this.components[idx1];
+            this.components[idx1] = this.components[idx2];
+            this.components[idx2] = temp;
+
+            this._updateRemote();
+        },
+
+        _updateRemote(){
             let fileContent = contentHelper.implodeContent(this.components);
 
             axios.post(
@@ -47,7 +60,7 @@ module.exports = {
                     headers: { 
                         'Content-Type' : 'text/plain' 
                     }
-                })
+                });
         }
       },
 
@@ -69,8 +82,6 @@ module.exports = {
 
         axios.get(`api/file?directory_id=${this.dir}&file_name=content.txt`).then((response) => {
             this.components = contentHelper.splitContent(response.data);
-            console.log(response.data);
-            console.log(this.components);
          })
 
          if(route.query.idx){

@@ -6,7 +6,7 @@ module.exports = {
     "components": {
         "render": {
             template: `
-                <a :href="url">
+                <a target="_blank" :href="url">
                     <span class="title">{{ title }}</span>
                     <span class="url">&#128279; {{baseUrl}}</span>
                 </a>`,
@@ -21,7 +21,6 @@ module.exports = {
             mounted(){
                 
                 var value = contentHelper.toObject(this.raw);
-                console.log("link", this.raw, value);
                 this.title = value.title;
                 this.url = value.url;
                 try {
@@ -60,8 +59,6 @@ module.exports = {
                 if(!this.input){
                     return;
                 }
-
-                console.log("load content", this.input);
 
                 var value = contentHelper.toObject(this.input)
                 this.model.title = value.title;

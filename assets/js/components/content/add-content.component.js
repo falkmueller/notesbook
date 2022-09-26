@@ -1,6 +1,6 @@
-const router = require("../lib/router");
-const app = require("../app");
-const contentHelper =  require("../lib/content-helper");
+const router = require("../../lib/router");
+const app = require("../../app");
+const contentHelper =  require("../../lib/content-helper");
 
 module.exports = {
     template: `<div>
@@ -31,8 +31,6 @@ module.exports = {
         },
 
         submit(raw){
-            console.log("submit", this.directoryId, raw);
-
             axios.get(`api/file?directory_id=${this.directoryId}&file_name=content.txt`).then((response) => {
                 this._updateContent(response.data, raw);
              }, () => {

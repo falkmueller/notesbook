@@ -15,7 +15,7 @@ module.exports = {
         addRoute(){
             if((this.route.query.dir || '') == '')
             {
-                return "#/add/directory";
+                return "#/directory/add";
             }
 
             return '#/add?dir=' + this.route.query.dir;

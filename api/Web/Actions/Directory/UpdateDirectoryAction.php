@@ -6,7 +6,7 @@ namespace Api\Web\Actions\Directory;
 use Api\Domain\Library\DirectoryLibrary;
 use Api\Web\Abstraction\Action;
 
-class ListDirectoryAction extends Action
+class UpdateDirectoryAction extends Action
 {
     private DirectoryLibrary $directoryLibrary;
 
@@ -17,7 +17,11 @@ class ListDirectoryAction extends Action
 
     protected function action()
     {
-        $response = $this->directoryLibrary->getDirectoryTree();
+        $body = $this->getParsedBody();
+        $directoryId = $body["id"];
+        $title = $body["title"];
+        
+        $response = $this->directoryLibrary->renameDirectory($directoryId, $title);
         $this->responseJson($response);
     }
 }

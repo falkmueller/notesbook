@@ -3,10 +3,10 @@ const app = require("../app");
 
 module.exports = {
     template: `<div class="select-type">
-        <a v-for="t in types" :key="t.name" :t="t" :href="'#/add/content?type=' + t.name + '&dir=' + (route.query.dir || '')">
+        <a v-for="t in types" :key="t.name" :t="t" :href="'#/content/add?type=' + t.name + '&dir=' + (route.query.dir || '')">
             {{ $t("type." + t.name + ".title") }}
         </a>
-        <a :href="'#/add/directory?dir=' + (route.query.dir || '/')">
+        <a :href="'#/directory/add?dir=' + (route.query.dir || '/')">
             {{ $t("type.subdirectory.title") }}
         </a>
     </div>`,

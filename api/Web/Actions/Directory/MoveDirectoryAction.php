@@ -6,7 +6,7 @@ namespace Api\Web\Actions\Directory;
 use Api\Domain\Library\DirectoryLibrary;
 use Api\Web\Abstraction\Action;
 
-class CreateDirectoryAction extends Action
+class MoveDirectoryAction extends Action
 {
     private DirectoryLibrary $directoryLibrary;
 
@@ -18,10 +18,16 @@ class CreateDirectoryAction extends Action
     protected function action()
     {
         $body = $this->getParsedBody();
-        $title = $body["title"];
-        $parentId = $body["parent_id"];
+        $directoryId = $body["id"];
+        $direction = intval($body["direction"]);
+        $moveLevel = !!$body["moveLevel"];
+
+        if($moveLevel){
+            $response = $this->directoryLibrary->moveDirectoryLevel($directoryId, $direction);
+        } else  {
+            $response = $this->directoryLibrary->sortDirectory($directoryId, $direction);
+        }
         
-        $response =  $this->directoryLibrary->createDirectory($parentId, $title);
         $this->responseJson($response);
     }
 }

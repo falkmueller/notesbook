@@ -1,6 +1,6 @@
-const router = require("../lib/router");
-const app = require("../app");
-const contentHelper = require("../lib/content-helper");
+const router = require("../../lib/router");
+const app = require("../../app");
+const contentHelper = require("../../lib/content-helper");
 
 module.exports = {
     template: `<div>
@@ -44,8 +44,6 @@ module.exports = {
         },
 
         submit(raw){
-            console.log("submit", this.directoryId, raw);
-
             this.content[this.idx].content = raw;
            
             let fileContent = contentHelper.implodeContent(this.content);

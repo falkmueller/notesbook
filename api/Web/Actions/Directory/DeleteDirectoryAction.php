@@ -6,7 +6,7 @@ namespace Api\Web\Actions\Directory;
 use Api\Domain\Library\DirectoryLibrary;
 use Api\Web\Abstraction\Action;
 
-class ListDirectoryAction extends Action
+class DeleteDirectoryAction extends Action
 {
     private DirectoryLibrary $directoryLibrary;
 
@@ -17,7 +17,8 @@ class ListDirectoryAction extends Action
 
     protected function action()
     {
-        $response = $this->directoryLibrary->getDirectoryTree();
+        $id = $_GET["id"];
+        $response =  $this->directoryLibrary->deleteDirectory($id);
         $this->responseJson($response);
     }
 }

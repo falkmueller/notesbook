@@ -408,6 +408,7 @@ img {
 
 .bar {
   position: fixed;
+  z-index: 2;
   bottom: 1.5em;
   right: 1.5em;
 }
@@ -442,16 +443,21 @@ img {
 .content-table a:hover {
   background-color: var(--color-tertiary);
 }
-.content-table a > span:first-child {
+.content-table a > span.title {
   flex-grow: 2;
   position: relative;
   overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
-.content-table a > span:first-child span::after {
+.content-table a > span.title span::after {
   position: absolute;
   padding-inline-start: 0.25ch;
   content: " . . . . . . . . . . . . . . . . . . . " ". . . . . . . . . . . . . . . . . . . . . . . " ". . . . . . . . . . . . . . . . . . . . . . . " ". . . . . . . . . . . . . . . . . . . . . . . " ". . . . . . . . . . . . . . . . . . . . . . . " ". . . . . . . . . . . . . . . . . . . . . . . " ". . . . . . . . . . . . . . . . . . . . . . . ";
   text-align: right;
+}
+.content-table .dropdown-right > .link {
+  padding: 0 0 0 1em;
 }
 
 .select-type a {
@@ -493,17 +499,17 @@ img {
 .content-file img {
   max-height: 80vh;
 }
-.content .dropdown {
+
+.dropdown-right {
   float: right;
   position: relative;
 }
-.content .dropdown > .link {
+.dropdown-right > .link {
   padding: 0.3em 0.3em 0.3em 1em;
 }
-.content .dropdown .dropdown-content {
+.dropdown-right .dropdown-content {
   right: 0;
 }
-
 .dropdown .dropdown-content {
   display: none;
   position: absolute;
@@ -511,7 +517,7 @@ img {
   box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
   z-index: 1;
 }
-.dropdown .dropdown-content a {
+.dropdown .dropdown-content > * {
   max-width: 200px;
   display: block;
   overflow: hidden;
@@ -519,13 +525,20 @@ img {
   text-overflow: ellipsis;
   padding: 0.5em;
 }
-.dropdown .dropdown-content a:hover {
-  background-color: var(--color-quinary);
-}
-.dropdown .dropdown-content a span {
+.dropdown .dropdown-content > * span {
   display: inline-block;
   width: 2em;
   text-align: center;
+}
+.dropdown .dropdown-content div {
+  display: flex;
+}
+.dropdown .dropdown-content div * {
+  width: auto;
+  flex-grow: 1;
+}
+.dropdown .dropdown-content a:hover {
+  background-color: var(--color-quinary);
 }
 .dropdown:hover .dropdown-content {
   display: block;
@@ -1307,6 +1320,9 @@ span.CodeMirror-selectedtext {
 
 h1 {
   font-size: min(3.6em, 10vw);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .pull-right {
