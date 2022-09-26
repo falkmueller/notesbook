@@ -572,7 +572,6 @@ function apiCall(method, url, body, options){
     }
 
     let currentUrl = window.location.href;
-    console.log(currentUrl);
 
     return axios({
         method: method,
@@ -587,6 +586,8 @@ function apiCall(method, url, body, options){
             }
             window.location = res.response.data.redirect + '&redirect=' + encodeURIComponent(currentUrl);
         }
+
+        throw res.response.status;
       });
 }
 
