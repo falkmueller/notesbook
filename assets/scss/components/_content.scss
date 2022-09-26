@@ -118,3 +118,7 @@ label[for="files"]{
 label[for="files"]:hover{
     background: var(--color-primary);
 }
+
+.TinyMDE {
+    min-height: 60vh;
+}

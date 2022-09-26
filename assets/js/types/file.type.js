@@ -38,7 +38,8 @@ module.exports = {
                 const lastDot =  this.file.lastIndexOf('.');
                 const ext =  this.file.substring(lastDot + 1).toLowerCase();
                 const dir = router.getRoute().query.dir;
-                this.url = `api/file?directory_id=${dir}&file_name=${this.file}`;
+                const token = localStorage.getItem("token");
+                this.url = `api/file?directory_id=${dir}&file_name=${this.file}&token=${token}`;
 
                 if(['jpeg', 'jpg', 'png', 'gif'].indexOf(ext) >= 0){
                     this.isImage = true;

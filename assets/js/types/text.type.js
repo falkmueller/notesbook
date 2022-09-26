@@ -26,6 +26,7 @@ module.exports = {
             template: `<div>
                 <form v-on:submit="submit">
                     <h1>{{ $t("type.text." + mode + ".headline") }}</h1>
+                    <div id="toolbar"></div>
                     <textarea id="editor"></textarea>
                     <button type="submit">{{ $t("type.text." + mode + ".button") }}</button>
                 </form>
@@ -40,8 +41,9 @@ module.exports = {
             props: ["onSubmit", "input"],
 
             mounted(){
-                editor = new SimpleMDE({ element: document.getElementById("editor") });
-                editor.value(this.input);
+                editor = new TinyMDE.Editor({element: 'editor'});
+                var commandBar = new TinyMDE.CommandBar({element: 'toolbar', editor: editor});
+                editor.setContent(this.input || "");
 
                 if(this.input){
                     this.mode = "edit";
@@ -51,7 +53,7 @@ module.exports = {
             methods: {
                 submit(e){
                     e.preventDefault();
-                    this.onSubmit(editor.value());
+                    this.onSubmit(editor.getContent());
                 }
             }
         }

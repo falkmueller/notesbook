@@ -17,7 +17,7 @@ function buildVendorScripts(){
     './js/vendor/vue.global.js',
     './js/vendor/vue-i18n.global.js',
     './js/vendor/axios.min.js',
-    './js/vendor/simplemde.min.js',
+    './js/vendor/tiny-mde.min.js',
     './js/vendor/marked.min.js'])
     .pipe(concat('vendor.js'))
     .pipe(gulp.dest('./dist'));
