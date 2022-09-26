@@ -1,6 +1,7 @@
 const router = require("../../lib/router");
 const app = require("../../app");
 const contentHelper = require("../../lib/content-helper");
+const api = require("../../lib/api");
 
 module.exports = {
     template: `<div>
@@ -22,7 +23,7 @@ module.exports = {
         this.directoryId = route.query.dir;
         this.idx = parseInt(route.query.idx);
 
-        axios.get(`api/file?directory_id=${this.directoryId}&file_name=content.txt`).then((response) => {
+        api.get(`/file?directory_id=${this.directoryId}&file_name=content.txt`).then((response) => {
                 
             this.content = contentHelper.splitContent(response.data);
             let comp = this.content[this.idx];
@@ -48,8 +49,8 @@ module.exports = {
            
             let fileContent = contentHelper.implodeContent(this.content);
 
-            axios.post(
-                `api/file?directory_id=${this.directoryId}&file_name=content.txt`, 
+            api.post(
+                `/file?directory_id=${this.directoryId}&file_name=content.txt`, 
                 fileContent,
                 {
                     headers: { 

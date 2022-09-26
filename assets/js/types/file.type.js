@@ -1,5 +1,6 @@
 const contentHelper = require("../lib/content-helper");
 const router = require("../lib/router");
+const api = require("../lib/api");
 
 function uuidv4() {
     return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
@@ -138,8 +139,8 @@ module.exports = {
                     this.model.original_name = name;
                     const dir = router.getRoute().query.dir;
 
-                    axios.post(
-                        `api/file?directory_id=${dir}&file_name=${this.model.file}`, 
+                    api.post(
+                        `/file?directory_id=${dir}&file_name=${this.model.file}`, 
                         fileContent,
                         {
                             headers: { 

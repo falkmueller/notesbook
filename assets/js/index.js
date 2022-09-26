@@ -7,8 +7,16 @@ router.routes['/content/add'] = require("./components/content/add-content.compon
 router.routes['/content/edit'] = require("./components/content/edit-content.component");
 router.routes['/page'] = require("./components/page.component");
 
+if(router.getRoute().query.token){
+    let route = router.getRoute();
+    localStorage.setItem("token", route.query.token);
+    delete route.query.token;
+    window.location.href = router.buildUrl(route.path, route.query);
+}
+
 var app = require("./app");
 app.types.push(require("./types/link.type"));
 app.types.push(require("./types/text.type"));
 app.types.push(require("./types/file.type"));
-app.run()
+
+window.app = app;

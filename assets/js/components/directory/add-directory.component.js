@@ -1,4 +1,5 @@
 const router = require("../../lib/router");
+const api = require("../../lib/api")
 
 module.exports = {
     template: `<div>
@@ -24,7 +25,7 @@ module.exports = {
 
             let route = router.getRoute();
           
-            axios.post('api/directory', {
+            api.post('/directory', {
                 title: this.model.title,
                 parent_id: route.query.dir || ""
             }).then(function(response){

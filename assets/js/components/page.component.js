@@ -1,6 +1,7 @@
 const contentHelper =  require("../lib/content-helper");
 const router = require("../lib/router");
 const app = require("../app");
+const api = require("../lib/api");
 
 module.exports = {
     template: `<div>
@@ -53,14 +54,9 @@ module.exports = {
         _updateRemote(){
             let fileContent = contentHelper.implodeContent(this.components);
 
-            axios.post(
-                `api/file?directory_id=${this.dir}&file_name=content.txt`, 
-                fileContent,
-                {
-                    headers: { 
-                        'Content-Type' : 'text/plain' 
-                    }
-                });
+            api.post(
+                `/file?directory_id=${this.dir}&file_name=content.txt`, 
+                fileContent);
         }
       },
 
@@ -76,11 +72,11 @@ module.exports = {
         let route = router.getRoute();
         this.dir = route.query.dir;
 
-        axios.get(`api/directory?id=${this.dir}`).then((response) => {
+        api.get(`/directory?id=${this.dir}`).then((response) => {
            this.title = response.data.title;
         });
 
-        axios.get(`api/file?directory_id=${this.dir}&file_name=content.txt`).then((response) => {
+        api.get(`/file?directory_id=${this.dir}&file_name=content.txt`).then((response) => {
             this.components = contentHelper.splitContent(response.data);
          })
 

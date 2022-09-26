@@ -7,7 +7,7 @@ module.exports = {
     "sortNumber": 2,
     "components": {
         "render": {
-            template: `<div>Text
+            template: `<div>
                 <div v-html="text"></div>
             </div>`,
             data() {

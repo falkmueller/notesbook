@@ -1,4 +1,5 @@
 const router = require("../../lib/router");
+const api = require("../../lib/api");
 
 module.exports = {
     template: `<div>
@@ -22,7 +23,7 @@ module.exports = {
         let route = router.getRoute();
         this.directoryId = route.query.dir;
         
-        axios.get(`api/directory?id=${this.directoryId}`).then((response) => {
+        api.get(`/directory?id=${this.directoryId}`).then((response) => {
             this.model.title = response.data.title;
         });
     },
@@ -32,7 +33,7 @@ module.exports = {
         submit(e){
             e.preventDefault();
           
-            axios.patch('api/directory', {
+            api.patch('/directory', {
                 title: this.model.title,
                 id: this.directoryId
             }).then(function(){

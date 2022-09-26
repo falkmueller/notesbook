@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 use Api\Framework\Container;
 use Api\Framework\Router;
+use Api\Web\Middleware\RouterAuthMiddleware;
 
 return function (Container $container){
     $router = new Router($container);
@@ -18,6 +19,8 @@ return function (Container $container){
     $router->add(Router::METHOD_POST, "/file", Api\Web\Actions\File\AlterFileAction::class);  
 
     $router->add(Router::METHOD_GET, "/content/get-page-title", Api\Web\Actions\Content\GetPageTitle::class);
+
+    $router->addMiddleware(RouterAuthMiddleware::class);
 
     return $router;
 };

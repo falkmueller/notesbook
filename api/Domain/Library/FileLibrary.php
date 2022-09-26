@@ -32,6 +32,10 @@ class FileLibrary
         $path = $this->directoryLibrary->getPathById($directoryid);
         $filePath = $path.DIRECTORY_SEPARATOR.$this->clearFileName($fileName);
 
+        if(file_exists($filePath))
+        {
+            rename($filePath, dirname($filePath).DIRECTORY_SEPARATOR.date("Y-m-d_His")."_".basename($filePath));
+        }
 
         if(!file_put_contents($filePath, $stream))
         {

@@ -70,8 +70,9 @@ module.exports = {
         }
     }
 }
-},{"../lib/router":14,"./not-found.component":8}],3:[function(require,module,exports){
+},{"../lib/router":15,"./not-found.component":8}],3:[function(require,module,exports){
 const app = require("../app");
+const api = require("../lib/api")
 
 app.vueApp.component('ContentTableItem', {
     template: `<ul>
@@ -103,13 +104,13 @@ app.vueApp.component('ContentTableItem', {
                 return;
             }
     
-            axios.delete(`api/directory?id=${directoryId}`).then(()=>{
+            api.delete(`/directory?id=${directoryId}`).then(()=>{
                 this.onReload();
             })
         },
 
         moveDir(directoryId, direction, moveLevel){
-            axios.patch(`api/directory/move`, {
+            api.patch(`/directory/move`, {
                 id: directoryId,
                 direction: direction,
                 moveLevel: moveLevel
@@ -141,7 +142,7 @@ module.exports = {
 
     methods: {
         load(){
-            axios.get('api/').then((response) => {
+            api.get('/').then((response) => {
                 this.root.children = response.data;
              })
         },
@@ -152,16 +153,17 @@ module.exports = {
                 return;
             }
 
-            axios.delete(`api/directory?id=${directoryId}`).then(function(){
+            api.delete(`/directory?id=${directoryId}`).then(function(){
                 this.load();
             })
         },
     }
 };
-},{"../app":1}],4:[function(require,module,exports){
+},{"../app":1,"../lib/api":13}],4:[function(require,module,exports){
 const router = require("../../lib/router");
 const app = require("../../app");
 const contentHelper =  require("../../lib/content-helper");
+const api = require("../../lib/api");
 
 module.exports = {
     template: `<div>
@@ -192,7 +194,7 @@ module.exports = {
         },
 
         submit(raw){
-            axios.get(`api/file?directory_id=${this.directoryId}&file_name=content.txt`).then((response) => {
+            api.get(`/file?directory_id=${this.directoryId}&file_name=content.txt`).then((response) => {
                 this._updateContent(response.data, raw);
              }, () => {
                 this._updateContent("", raw);
@@ -206,8 +208,8 @@ module.exports = {
             });
             let newIdx = content.length -1;
 
-            axios.post(
-                `api/file?directory_id=${this.directoryId}&file_name=content.txt`, 
+            api.post(
+                `/file?directory_id=${this.directoryId}&file_name=content.txt`, 
                 contentHelper.implodeContent(content),
                 {
                     headers: { 
@@ -219,10 +221,11 @@ module.exports = {
         }
     }
 }
-},{"../../app":1,"../../lib/content-helper":13,"../../lib/router":14}],5:[function(require,module,exports){
+},{"../../app":1,"../../lib/api":13,"../../lib/content-helper":14,"../../lib/router":15}],5:[function(require,module,exports){
 const router = require("../../lib/router");
 const app = require("../../app");
 const contentHelper = require("../../lib/content-helper");
+const api = require("../../lib/api");
 
 module.exports = {
     template: `<div>
@@ -244,7 +247,7 @@ module.exports = {
         this.directoryId = route.query.dir;
         this.idx = parseInt(route.query.idx);
 
-        axios.get(`api/file?directory_id=${this.directoryId}&file_name=content.txt`).then((response) => {
+        api.get(`/file?directory_id=${this.directoryId}&file_name=content.txt`).then((response) => {
                 
             this.content = contentHelper.splitContent(response.data);
             let comp = this.content[this.idx];
@@ -270,8 +273,8 @@ module.exports = {
            
             let fileContent = contentHelper.implodeContent(this.content);
 
-            axios.post(
-                `api/file?directory_id=${this.directoryId}&file_name=content.txt`, 
+            api.post(
+                `/file?directory_id=${this.directoryId}&file_name=content.txt`, 
                 fileContent,
                 {
                     headers: { 
@@ -283,8 +286,9 @@ module.exports = {
         }
     }
 }
-},{"../../app":1,"../../lib/content-helper":13,"../../lib/router":14}],6:[function(require,module,exports){
+},{"../../app":1,"../../lib/api":13,"../../lib/content-helper":14,"../../lib/router":15}],6:[function(require,module,exports){
 const router = require("../../lib/router");
+const api = require("../../lib/api")
 
 module.exports = {
     template: `<div>
@@ -310,7 +314,7 @@ module.exports = {
 
             let route = router.getRoute();
           
-            axios.post('api/directory', {
+            api.post('/directory', {
                 title: this.model.title,
                 parent_id: route.query.dir || ""
             }).then(function(response){
@@ -320,8 +324,9 @@ module.exports = {
     }
 
 }
-},{"../../lib/router":14}],7:[function(require,module,exports){
+},{"../../lib/api":13,"../../lib/router":15}],7:[function(require,module,exports){
 const router = require("../../lib/router");
+const api = require("../../lib/api");
 
 module.exports = {
     template: `<div>
@@ -345,7 +350,7 @@ module.exports = {
         let route = router.getRoute();
         this.directoryId = route.query.dir;
         
-        axios.get(`api/directory?id=${this.directoryId}`).then((response) => {
+        api.get(`/directory?id=${this.directoryId}`).then((response) => {
             this.model.title = response.data.title;
         });
     },
@@ -355,7 +360,7 @@ module.exports = {
         submit(e){
             e.preventDefault();
           
-            axios.patch('api/directory', {
+            api.patch('/directory', {
                 title: this.model.title,
                 id: this.directoryId
             }).then(function(){
@@ -365,7 +370,7 @@ module.exports = {
     }
 
 }
-},{"../../lib/router":14}],8:[function(require,module,exports){
+},{"../../lib/api":13,"../../lib/router":15}],8:[function(require,module,exports){
 module.exports = {
     template: `<div>404</div>`
 }
@@ -373,6 +378,7 @@ module.exports = {
 const contentHelper =  require("../lib/content-helper");
 const router = require("../lib/router");
 const app = require("../app");
+const api = require("../lib/api");
 
 module.exports = {
     template: `<div>
@@ -425,14 +431,9 @@ module.exports = {
         _updateRemote(){
             let fileContent = contentHelper.implodeContent(this.components);
 
-            axios.post(
-                `api/file?directory_id=${this.dir}&file_name=content.txt`, 
-                fileContent,
-                {
-                    headers: { 
-                        'Content-Type' : 'text/plain' 
-                    }
-                });
+            api.post(
+                `/file?directory_id=${this.dir}&file_name=content.txt`, 
+                fileContent);
         }
       },
 
@@ -448,11 +449,11 @@ module.exports = {
         let route = router.getRoute();
         this.dir = route.query.dir;
 
-        axios.get(`api/directory?id=${this.dir}`).then((response) => {
+        api.get(`/directory?id=${this.dir}`).then((response) => {
            this.title = response.data.title;
         });
 
-        axios.get(`api/file?directory_id=${this.dir}&file_name=content.txt`).then((response) => {
+        api.get(`/file?directory_id=${this.dir}&file_name=content.txt`).then((response) => {
             this.components = contentHelper.splitContent(response.data);
          })
 
@@ -464,7 +465,7 @@ module.exports = {
          }
     }
 }
-},{"../app":1,"../lib/content-helper":13,"../lib/router":14}],10:[function(require,module,exports){
+},{"../app":1,"../lib/api":13,"../lib/content-helper":14,"../lib/router":15}],10:[function(require,module,exports){
 const router = require("../lib/router");
 const app = require("../app");
 
@@ -492,7 +493,7 @@ module.exports = {
         }
     }
 };
-},{"../app":1,"../lib/router":14}],11:[function(require,module,exports){
+},{"../app":1,"../lib/router":15}],11:[function(require,module,exports){
 const messages = {
     en: {
         contentTable: {
@@ -539,12 +540,71 @@ router.routes['/content/add'] = require("./components/content/add-content.compon
 router.routes['/content/edit'] = require("./components/content/edit-content.component");
 router.routes['/page'] = require("./components/page.component");
 
+if(router.getRoute().query.token){
+    let route = router.getRoute();
+    localStorage.setItem("token", route.query.token);
+    delete route.query.token;
+    window.location.href = router.buildUrl(route.path, route.query);
+}
+
 var app = require("./app");
 app.types.push(require("./types/link.type"));
 app.types.push(require("./types/text.type"));
 app.types.push(require("./types/file.type"));
-app.run()
-},{"./app":1,"./components/content-table.compnent":3,"./components/content/add-content.component":4,"./components/content/edit-content.component":5,"./components/directory/add-directory.component":6,"./components/directory/edit-directory.component":7,"./components/page.component":9,"./components/select-type.component":10,"./lib/router":14,"./types/file.type":15,"./types/link.type":16,"./types/text.type":17}],13:[function(require,module,exports){
+
+window.app = app;
+},{"./app":1,"./components/content-table.compnent":3,"./components/content/add-content.component":4,"./components/content/edit-content.component":5,"./components/directory/add-directory.component":6,"./components/directory/edit-directory.component":7,"./components/page.component":9,"./components/select-type.component":10,"./lib/router":15,"./types/file.type":16,"./types/link.type":17,"./types/text.type":18}],13:[function(require,module,exports){
+function apiCall(method, url, body, options){
+
+    
+    let headers = { }
+    const token = localStorage.getItem('token');
+
+    if(token){
+        headers.Authorization =  'Bearer '+ token; 
+    }
+
+    if(options && options.headers){
+        headers = {...headers, ...options.headers};
+    }
+
+    let currentUrl = window.location.href;
+    console.log(currentUrl);
+
+    return axios({
+        method: method,
+        url: 'api' + url,
+        headers: headers,
+        data: body
+      }).catch((res) => {
+        if(res.response.status == "401" && res.response.data.redirect){
+            let currentUrl = window.location.href;
+            if(currentUrl.indexOf("#") < 0){
+                currentUrl += "#/";
+            }
+            window.location = res.response.data.redirect + '&redirect=' + encodeURIComponent(currentUrl);
+        }
+      });
+}
+
+module.exports = {
+    get(url){
+        return apiCall('get', url);
+    },
+
+    delete(url){
+        return apiCall('delete', url);
+    },
+
+    patch(url, body){
+        return apiCall('patch', url, body)
+    },
+
+    post(url, body, options){
+        return apiCall('post', url, body, options)
+    },
+}
+},{}],14:[function(require,module,exports){
 module.exports = {
 
     splitContent(content){
@@ -627,7 +687,7 @@ module.exports = {
         return response;
     }
 };
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 module.exports = {
     routes: {},
 
@@ -639,11 +699,16 @@ module.exports = {
             path: hash.split('?')[0],
             query: Object.fromEntries(new URLSearchParams(query))
         }
+    },
+
+    buildUrl(path, query){
+        return "#" + path + "?" + new URLSearchParams(query).toString()
     }
 }
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 const contentHelper = require("../lib/content-helper");
 const router = require("../lib/router");
+const api = require("../lib/api");
 
 function uuidv4() {
     return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
@@ -782,8 +847,8 @@ module.exports = {
                     this.model.original_name = name;
                     const dir = router.getRoute().query.dir;
 
-                    axios.post(
-                        `api/file?directory_id=${dir}&file_name=${this.model.file}`, 
+                    api.post(
+                        `/file?directory_id=${dir}&file_name=${this.model.file}`, 
                         fileContent,
                         {
                             headers: { 
@@ -835,8 +900,9 @@ module.exports = {
         }
     }
 }
-},{"../lib/content-helper":13,"../lib/router":14}],16:[function(require,module,exports){
+},{"../lib/api":13,"../lib/content-helper":14,"../lib/router":15}],17:[function(require,module,exports){
 const contentHelper = require("../lib/content-helper");
+const api = require("../lib/api");
 
 module.exports = {
     "name": "link",
@@ -910,7 +976,7 @@ module.exports = {
                         return;
                     }
 
-                    axios.get('api/content/get-page-title?url=' + encodeURIComponent(this.model.url)).then((response) => {
+                    api.get('/content/get-page-title?url=' + encodeURIComponent(this.model.url)).then((response) => {
                         if(response.data){
                             this.model.title = response.data;
                         }
@@ -969,7 +1035,7 @@ module.exports = {
         }
     }
 }
-},{"../lib/content-helper":13}],17:[function(require,module,exports){
+},{"../lib/api":13,"../lib/content-helper":14}],18:[function(require,module,exports){
 const contentHelper = require("../lib/content-helper");
 
 var editor;
@@ -979,7 +1045,7 @@ module.exports = {
     "sortNumber": 2,
     "components": {
         "render": {
-            template: `<div>Text
+            template: `<div>
                 <div v-html="text"></div>
             </div>`,
             data() {
@@ -1061,4 +1127,4 @@ module.exports = {
         }
     }
 }
-},{"../lib/content-helper":13}]},{},[12]);
+},{"../lib/content-helper":14}]},{},[12]);

@@ -3,7 +3,7 @@
 ## TODO
 
 - authorisierung
-- revisionen beim löschen und ändern anlegen
+- add PWA icons
 
 ## Keykords
 

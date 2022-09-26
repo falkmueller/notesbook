@@ -9,5 +9,9 @@ module.exports = {
             path: hash.split('?')[0],
             query: Object.fromEntries(new URLSearchParams(query))
         }
+    },
+
+    buildUrl(path, query){
+        return "#" + path + "?" + new URLSearchParams(query).toString()
     }
 }

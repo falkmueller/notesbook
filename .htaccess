@@ -1,5 +1,6 @@
 # enable apache rewrite engine
 RewriteEngine on
+RewriteRule .* - [e=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
 # disbale access on assets folder
 RewriteRule ^files/.*$ - [F,L]

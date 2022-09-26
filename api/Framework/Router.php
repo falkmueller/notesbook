@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace Api\Framework;
 
+use Closure;
+
 class Router 
 {
     const METHOD_GET = "GET";
@@ -11,6 +13,8 @@ class Router
     const METHOD_PATCH = "PATCH";
     private array $routes;
     private Container $container;
+
+    private array $middleware; 
 
     public function __construct(Container $container)
     {
@@ -21,6 +25,13 @@ class Router
             self::METHOD_DELETE => [],
             self::METHOD_PATCH => [],
         ];
+
+        $this->middleware = [];
+    }
+
+    public function addMiddleware($middleware)
+    {
+        $this->middleware[] = $middleware;
     }
 
     public function add(string $method, string $path, $callable){
@@ -76,7 +87,8 @@ class Router
                 continue;
             }
 
-            $this->callAction($callable);
+           $this->callMiddlewareStack($callable);
+
             return;
         }
 
@@ -84,23 +96,18 @@ class Router
         echo "NOT FOUND";
     }
 
-    private function callAction($callable){
-      try {
-        if(is_callable($callable))
-        {
-            $callable();
+    private function callMiddlewareStack($callable){
+        $this->middleware[] = new RouteExecutionMiddleware($this->container);
+
+        $action = fn($input) => $input;
+        foreach (array_reverse($this->middleware) as $middleware) {
+            if(!is_callable($middleware))
+            {
+                $middleware = $this->container->resolve($middleware);
+            }
+
+            $action = fn($input) => $middleware($input, $action);
         }
-        else
-        {
-            $callableObject = $this->container->resolve($callable);
-            $callableObject();
-        }
-        
-      } catch (\Throwable $th) {
-          header("HTTP/1.0 500 Internal Server Error");
-          if(in_array($_SERVER['REMOTE_ADDR'], array('127.0.0.1', "::1"))){
-              echo $th;
-          }
-      }
+        $action($callable);
     }
 }

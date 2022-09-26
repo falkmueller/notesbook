@@ -15,4 +15,7 @@ return function (Container $container){
 
     $container->add(Api\Web\Actions\File\GetFileAction::class)->addArguments([FileLibrary::class]);
     $container->add(Api\Web\Actions\File\AlterFileAction::class)->addArguments([FileLibrary::class]);
+
+    $container->add(Api\Web\Middleware\RouterAuthMiddleware::class)->addArguments(["config"]);
+    ;
 };

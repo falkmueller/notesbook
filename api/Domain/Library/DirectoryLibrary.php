@@ -3,12 +3,14 @@ declare(strict_types=1);
 
 namespace Api\Domain\Library;
 
+use Directory;
 use Exception;
 
 class DirectoryLibrary
 {
     private string $baseDir;
     CONST NUMBER_LENGTH = 3;
+    const TRASH_FOLDER = "_trash";
 
     public function __construct(array $config)
     {
@@ -28,6 +30,8 @@ class DirectoryLibrary
 
         foreach($children as $childPath)
         {
+            if(basename($childPath) == self::TRASH_FOLDER) {continue;}
+
             $parts = explode("_", basename($childPath), 2);
             $title = urldecode($parts[1]);
             $id = $parentId ? "{$parentId}.{$parts[0]}" : $parts[0];
@@ -124,6 +128,7 @@ class DirectoryLibrary
         $parentPath = dirname($path);
 
         $children = glob("{$parentPath}/*", GLOB_ONLYDIR);
+        $children = array_filter($children, function($s){ return basename($s) != self::TRASH_FOLDER;});
         sort($children);
         $sibling = [
             "prev" => null,
@@ -148,10 +153,16 @@ class DirectoryLibrary
     public function deleteDirectory(string $id)
     {
         $path = $this->getPathById($id);
-        return $this->deleteDirectoryRecursive($path);
+        $trashDir = $this->baseDir.DIRECTORY_SEPARATOR.self::TRASH_FOLDER.DIRECTORY_SEPARATOR;
+
+        if(!file_exists($trashDir)){
+            @mkdir($trashDir);
+        }
+
+        rename($path, $trashDir.DIRECTORY_SEPARATOR.date("Y-m-d_His")."_".basename($path));
     }
 
-    private function deleteDirectoryRecursive($dir)
+    /*private function deleteDirectoryRecursive($dir)
     { 
         $files = array_diff(scandir($dir), array('.','..')); 
 
@@ -168,7 +179,7 @@ class DirectoryLibrary
         }
          
         return @rmdir($dir); 
-    } 
+    } */
 
     public function renameDirectory(string $id, $title)
     {
@@ -198,6 +209,7 @@ class DirectoryLibrary
     private function GetNextNumber($parentPath)
     {
         $files = glob("{$parentPath}/*", GLOB_ONLYDIR);
+        $files = array_filter($files, function($s){ return basename($s) != self::TRASH_FOLDER;});
         rsort($files);
 
         $lastId = 0;

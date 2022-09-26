@@ -1,4 +1,5 @@
 const app = require("../app");
+const api = require("../lib/api")
 
 app.vueApp.component('ContentTableItem', {
     template: `<ul>
@@ -30,13 +31,13 @@ app.vueApp.component('ContentTableItem', {
                 return;
             }
     
-            axios.delete(`api/directory?id=${directoryId}`).then(()=>{
+            api.delete(`/directory?id=${directoryId}`).then(()=>{
                 this.onReload();
             })
         },
 
         moveDir(directoryId, direction, moveLevel){
-            axios.patch(`api/directory/move`, {
+            api.patch(`/directory/move`, {
                 id: directoryId,
                 direction: direction,
                 moveLevel: moveLevel
@@ -68,7 +69,7 @@ module.exports = {
 
     methods: {
         load(){
-            axios.get('api/').then((response) => {
+            api.get('/').then((response) => {
                 this.root.children = response.data;
              })
         },
@@ -79,7 +80,7 @@ module.exports = {
                 return;
             }
 
-            axios.delete(`api/directory?id=${directoryId}`).then(function(){
+            api.delete(`/directory?id=${directoryId}`).then(function(){
                 this.load();
             })
         },

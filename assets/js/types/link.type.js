@@ -1,4 +1,5 @@
 const contentHelper = require("../lib/content-helper");
+const api = require("../lib/api");
 
 module.exports = {
     "name": "link",
@@ -72,7 +73,7 @@ module.exports = {
                         return;
                     }
 
-                    axios.get('api/content/get-page-title?url=' + encodeURIComponent(this.model.url)).then((response) => {
+                    api.get('/content/get-page-title?url=' + encodeURIComponent(this.model.url)).then((response) => {
                         if(response.data){
                             this.model.title = response.data;
                         }
