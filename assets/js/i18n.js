@@ -26,9 +26,9 @@ const messages = {
 
   module.exports = {
     messages,
-    getVuePlugin(){
+    getVuePlugin(defaulLanguage){
         return VueI18n.createI18n({
-            locale: 'de', // set locale
+            locale: defaulLanguage, // set locale
             fallbackLocale: 'en', // set fallback locale
             messages,
         })

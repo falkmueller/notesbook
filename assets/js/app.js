@@ -1,4 +1,5 @@
 const i18n = require("./i18n");
+const router = require("./lib/router")
 
 module.exports = {
     types: [],
@@ -11,7 +12,9 @@ module.exports = {
             i18n.messages.de.type[type.name] = type.translations.de.type[type.name];
         });
         
-        this.vueApp.use(i18n.getVuePlugin());
+        var language = router.getRoute().query.ln || "de";
+
+        this.vueApp.use(i18n.getVuePlugin(language));
         this.vueApp.mount('#app');
     }
 }

@@ -1,5 +1,6 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 const i18n = require("./i18n");
+const router = require("./lib/router")
 
 module.exports = {
     types: [],
@@ -12,11 +13,13 @@ module.exports = {
             i18n.messages.de.type[type.name] = type.translations.de.type[type.name];
         });
         
-        this.vueApp.use(i18n.getVuePlugin());
+        var language = router.getRoute().query.ln || "de";
+
+        this.vueApp.use(i18n.getVuePlugin(language));
         this.vueApp.mount('#app');
     }
 }
-},{"./components/app.component":2,"./i18n":11}],2:[function(require,module,exports){
+},{"./components/app.component":2,"./i18n":11,"./lib/router":15}],2:[function(require,module,exports){
 const router = require("../lib/router");
 const notFoundComponent = require("./not-found.component");
 
@@ -522,9 +525,9 @@ const messages = {
 
   module.exports = {
     messages,
-    getVuePlugin(){
+    getVuePlugin(defaulLanguage){
         return VueI18n.createI18n({
-            locale: 'de', // set locale
+            locale: defaulLanguage, // set locale
             fallbackLocale: 'en', // set fallback locale
             messages,
         })
