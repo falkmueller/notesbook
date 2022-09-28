@@ -7,13 +7,13 @@ app.vueApp.component('ContentTableItem', {
             <div class="dropdown dropdown-right">
                 <button class="link">&#8942;</button>
                 <div class="dropdown-content">
-                    <a :href="'#/directory/edit?dir=' + node.id" ><span>&#9998;</span> bearbeiten</a>
-                    <a @click="deleteDir(node.id)"><span>&#120;</span> löschen</a>
+                    <a :href="'#/directory/edit?dir=' + node.id" ><span class="icon icon-pen"></span> bearbeiten</a>
+                    <a @click="deleteDir(node.id)"><span class="icon icon-trash_can"></span> löschen</a>
                     <div>
-                        <a @click="moveDir(node.id, -1, false)"><span>&#129081;</span></a>
-                        <a @click="moveDir(node.id, 1, false)"><span>&#129083;</span></a>
-                        <a @click="moveDir(node.id, -1, true)"><span>&#129080;</span></a>
-                        <a @click="moveDir(node.id, 1, true)"><span>&#129082;</span></a>
+                        <a @click="moveDir(node.id, -1, false)"><span class="icon icon-chevron_up"></a>
+                        <a @click="moveDir(node.id, 1, false)"><span class="icon icon-chevron_down"></a>
+                        <a @click="moveDir(node.id, -1, true)"><span class="icon icon-chevron_left"></a>
+                        <a @click="moveDir(node.id, 1, true)"><span class="icon icon-chevron_right"></a>
                     </div>
                 </div>
             </div>

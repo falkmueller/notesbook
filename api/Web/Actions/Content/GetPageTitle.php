@@ -19,6 +19,12 @@ class GetPageTitle extends Action
         }
 
         $title = $this->getPageTitle($url);
+        $title = strip_tags($title);
+
+        if(strlen($title) > 205)
+        {
+            $title = substr($title, 0, 200)."...";
+        }
         
         $this->responseJson($title);
     }

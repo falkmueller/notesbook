@@ -83,13 +83,13 @@ app.vueApp.component('ContentTableItem', {
             <div class="dropdown dropdown-right">
                 <button class="link">&#8942;</button>
                 <div class="dropdown-content">
-                    <a :href="'#/directory/edit?dir=' + node.id" ><span>&#9998;</span> bearbeiten</a>
-                    <a @click="deleteDir(node.id)"><span>&#120;</span> löschen</a>
+                    <a :href="'#/directory/edit?dir=' + node.id" ><span class="icon icon-pen"></span> bearbeiten</a>
+                    <a @click="deleteDir(node.id)"><span class="icon icon-trash_can"></span> löschen</a>
                     <div>
-                        <a @click="moveDir(node.id, -1, false)"><span>&#129081;</span></a>
-                        <a @click="moveDir(node.id, 1, false)"><span>&#129083;</span></a>
-                        <a @click="moveDir(node.id, -1, true)"><span>&#129080;</span></a>
-                        <a @click="moveDir(node.id, 1, true)"><span>&#129082;</span></a>
+                        <a @click="moveDir(node.id, -1, false)"><span class="icon icon-chevron_up"></a>
+                        <a @click="moveDir(node.id, 1, false)"><span class="icon icon-chevron_down"></a>
+                        <a @click="moveDir(node.id, -1, true)"><span class="icon icon-chevron_left"></a>
+                        <a @click="moveDir(node.id, 1, true)"><span class="icon icon-chevron_right"></a>
                     </div>
                 </div>
             </div>
@@ -391,10 +391,10 @@ module.exports = {
             <div class="dropdown dropdown-right">
                 <button class="link">&#8942;</button>
                 <div class="dropdown-content">
-                    <a :href="'#/content/edit?idx=' + index + '&dir=' + dir"><span>&#9998;</span> bearbeiten</a>
-                    <a @click="deleteContent(index)"><span>&#120;</span> löschen</a>
-                    <a v-if="index > 0" @click="changeItems(index, index -1)"><span>&#129081;</span> höher</a>
-                    <a v-if="index < components.length - 1" @click="changeItems(index, index + 1)"><span>&#129083;</span> runter</a>
+                    <a :href="'#/content/edit?idx=' + index + '&dir=' + dir"><span class="icon icon-pen"></span> bearbeiten</a>
+                    <a @click="deleteContent(index)"><span class="icon icon-trash_can"></span> löschen</a>
+                    <a v-if="index > 0" @click="changeItems(index, index -1)"><span class="icon icon-chevron_up"></span> höher</a>
+                    <a v-if="index < components.length - 1" @click="changeItems(index, index + 1)"><span class="icon icon-chevron_down"></span> runter</a>
                 </div>
             </div>
             
@@ -424,11 +424,15 @@ module.exports = {
         },
 
         changeItems(idx1, idx2){
-            let temp = this.components[idx1];
-            this.components[idx1] = this.components[idx2];
-            this.components[idx2] = temp;
+            this.components[idx1] =  this.components.splice(idx2, 1, this.components[idx1])[0];
 
-            this._updateRemote();
+            var temp = this.components;
+            this.components = [];
+
+            this.$nextTick().then(() => {
+                this.components = temp;
+                this._updateRemote();
+            });       
         },
 
         _updateRemote(){
@@ -1050,9 +1054,7 @@ module.exports = {
     "sortNumber": 2,
     "components": {
         "render": {
-            template: `<div>
-                <div v-html="text"></div>
-            </div>`,
+            template: `<div class="content-body" v-html="text"></div>`,
             data() {
                 return {
                     text: ""
@@ -1060,6 +1062,9 @@ module.exports = {
             },
 
             mounted(){
+                marked.setOptions({
+                    breaks: true
+                });
                 this.text = marked.parse(this.raw);
             },
 

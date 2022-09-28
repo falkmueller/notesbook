@@ -14,6 +14,7 @@ notes, bookmaks manager, oranizer, wiki
 - [axios ajax handler](https://github.com/axios/axios)
 - [marked markdown library](https://github.com/markedjs/marked)
 - [tiny markdown editor](https://github.com/jefago/tiny-markdown-editor)
+- [mfglabs icon font](http://mfglabs.github.io/mfglabs-iconset/)
 
 ## installation
 - checkout repository

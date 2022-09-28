@@ -11,10 +11,10 @@ module.exports = {
             <div class="dropdown dropdown-right">
                 <button class="link">&#8942;</button>
                 <div class="dropdown-content">
-                    <a :href="'#/content/edit?idx=' + index + '&dir=' + dir"><span>&#9998;</span> bearbeiten</a>
-                    <a @click="deleteContent(index)"><span>&#120;</span> löschen</a>
-                    <a v-if="index > 0" @click="changeItems(index, index -1)"><span>&#129081;</span> höher</a>
-                    <a v-if="index < components.length - 1" @click="changeItems(index, index + 1)"><span>&#129083;</span> runter</a>
+                    <a :href="'#/content/edit?idx=' + index + '&dir=' + dir"><span class="icon icon-pen"></span> bearbeiten</a>
+                    <a @click="deleteContent(index)"><span class="icon icon-trash_can"></span> löschen</a>
+                    <a v-if="index > 0" @click="changeItems(index, index -1)"><span class="icon icon-chevron_up"></span> höher</a>
+                    <a v-if="index < components.length - 1" @click="changeItems(index, index + 1)"><span class="icon icon-chevron_down"></span> runter</a>
                 </div>
             </div>
             
@@ -44,11 +44,15 @@ module.exports = {
         },
 
         changeItems(idx1, idx2){
-            let temp = this.components[idx1];
-            this.components[idx1] = this.components[idx2];
-            this.components[idx2] = temp;
+            this.components[idx1] =  this.components.splice(idx2, 1, this.components[idx1])[0];
 
-            this._updateRemote();
+            var temp = this.components;
+            this.components = [];
+
+            this.$nextTick().then(() => {
+                this.components = temp;
+                this._updateRemote();
+            });       
         },
 
         _updateRemote(){

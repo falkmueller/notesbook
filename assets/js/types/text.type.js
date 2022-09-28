@@ -7,9 +7,7 @@ module.exports = {
     "sortNumber": 2,
     "components": {
         "render": {
-            template: `<div>
-                <div v-html="text"></div>
-            </div>`,
+            template: `<div class="content-body" v-html="text"></div>`,
             data() {
                 return {
                     text: ""
@@ -17,6 +15,9 @@ module.exports = {
             },
 
             mounted(){
+                marked.setOptions({
+                    breaks: true
+                });
                 this.text = marked.parse(this.raw);
             },
 

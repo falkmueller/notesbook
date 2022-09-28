@@ -32,6 +32,22 @@
             max-height: 80vh;
         }
     }
+
+    &-text {
+        h1 {
+            font-size: 4.6rem;
+        }
+
+        .content-body {
+            a::before {
+                content: "\1F517";
+            }
+    
+            a:hover {
+                text-decoration: underline;
+            }
+        } 
+    }
 }
 
 .dropdown {
@@ -121,4 +137,5 @@ label[for="files"]:hover{
 
 .TinyMDE {
     min-height: 60vh;
+    margin-bottom: 1em;
 }
